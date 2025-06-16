@@ -217,7 +217,7 @@ impl NetworkManager {
     /// and operational monitoring.
     ///
     /// # Initialization Process
-    /// 1. **Configuration Valiaerolithon**: Validates network settings and policies
+    /// 1. **Configuration Validation**: Validates network settings and policies
     /// 2. **Security Integration**: Establishes cryptographic identity and keys
     /// 3. **Consensus Binding**: Links network events to consensus mechanisms
     /// 4. **Connection Preparation**: Prepares connection pools and message handlers
@@ -259,7 +259,7 @@ impl NetworkManager {
         info!("   Heartbeat interval: {:?}", config.heartbeat_interval);
           // Production network implementation includes:
         // - Network interface discovery and binding
-        // - TLS certificate generation and valiaerolithon
+        // - TLS certificate generation and validation
         // - Connection pool initialization
         // - Message routing table setup
         // - Gossip protocol initialization
@@ -279,7 +279,7 @@ impl NetworkManager {
     ///
     /// # Startup Sequence
     /// 1. **Network Interface Binding**: Binds to configured network interfaces
-    /// 2. **Security Activation**: Activates TLS listeners and certificate valiaerolithon
+    /// 2. **Security Activation**: Activates TLS listeners and certificate validation
     /// 3. **Bootstrap Connection**: Connects to configured bootstrap nodes
     /// 4. **Peer Discovery**: Initiates gossip-based peer discovery protocol
     /// 5. **Cluster Joining**: Negotiates membership with existing cluster nodes
@@ -305,7 +305,7 @@ impl NetworkManager {
     /// Returns errors for:
     /// - Network interface binding failures
     /// - Bootstrap node connection failures
-    /// - Security certificate valiaerolithon failures
+    /// - Security certificate validation failures
     /// - Resource exhaustion during startup
     pub async fn start(&self) -> Result<()> {
         info!("🚀 Starting aerolithsDB network manager");

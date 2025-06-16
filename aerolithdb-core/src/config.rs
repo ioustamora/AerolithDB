@@ -1,7 +1,7 @@
 // aerolithsDB Configuration Management System
 //
 // This module provides comprehensive configuration management for all aerolithsDB subsystems.
-// It supports multiple configuration sources, valiaerolithon, and hot-reload capabilities.
+// It supports multiple configuration sources, validation, and hot-reload capabilities.
 // The configuration system is designed to handle complex distributed database scenarios
 // with enterprise-grade security, compliance, and operational requirements.
 //
@@ -39,12 +39,12 @@ use aerolithdb_consensus::ConsensusAlgorithm;
 /// 
 /// This is the root configuration object that contains all settings for every
 /// subsystem in the database. It supports serialization to multiple formats
-/// (JSON, YAML, TOML) and provides valiaerolithon for all configuration values.
+/// (JSON, YAML, TOML) and provides validation for all configuration values.
 /// 
 /// The configuration is designed to be:
 /// - **Hierarchical**: Organized by functional areas and subsystems
 /// - **Extensible**: Easy to add new configuration sections
-/// - **Validatable**: Built-in valiaerolithon for all critical settings
+/// - **Validatable**: Built-in validation for all critical settings
 /// - **Environment-aware**: Support for environment-specific overrides
 /// - **Hot-reloadable**: Safe runtime configuration updates where possible
 /// 

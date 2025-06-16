@@ -241,7 +241,7 @@ impl MemoryCache {
     /// Remove data from the memory cache and update statistics.
     /// 
     /// Deletes cached data and frees associated memory. This operation
-    /// is typically used during document deletion or cache invaliaerolithon.
+    /// is typically used during document deletion or cache invalidation.
     /// 
     /// # Arguments
     /// 

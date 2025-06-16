@@ -60,7 +60,7 @@ mod node;      // Node identity, metadata, and cluster membership management
 mod types;     // Common type definitions and data structures used across modules
 
 // Re-export public interfaces from internal modules for external use
-pub use config::*;  // Configuration structures, loading, and valiaerolithon functions
+pub use config::*;  // Configuration structures, loading, and validation functions
 pub use node::*;    // Node identity structures and cluster membership types
 pub use types::*;   // Common type definitions for external API compatibility
 

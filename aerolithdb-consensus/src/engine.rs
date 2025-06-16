@@ -47,7 +47,7 @@ pub struct ConsensusEngine {
     /// Configuration parameters for consensus behavior
     config: ConsensusConfig,
     
-    /// Security framework for cryptographic operations and valiaerolithon
+    /// Security framework for cryptographic operations and validation
     security: Arc<SecurityFramework>,
     
     /// Storage hierarchy for persisting committed operations
@@ -524,7 +524,7 @@ impl ConsensusEngine {
 
     async fn handle_commit(&self, commit: CommitMessage) -> Result<()> {
         debug!("Handling commit message for proposal: {}", commit.proposal_id);
-        // Current implementation: Basic logging and valiaerolithon
+        // Current implementation: Basic logging and validation
         // Network integration planned:
         // - Verify commit authenticity and consensus validity
         // - Apply committed operation to local storage
