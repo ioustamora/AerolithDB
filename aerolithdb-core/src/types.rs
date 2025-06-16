@@ -23,7 +23,7 @@ pub struct TransactionId(pub Uuid);
 pub type PeerId = NodeId;
 
 /// Vector clock for distributed consensus
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone)]
 pub struct VectorClock<T>
 where
     T: Clone + Eq + std::hash::Hash + serde::Serialize + serde::de::DeserializeOwned,
@@ -269,9 +269,11 @@ where
         }
 
         strictly_less
-    }
-
-    pub fn concurrent(&self, other: &VectorClock<T>) -> bool {
+    }    pub fn concurrent(&self, other: &VectorClock<T>) -> bool {
+        // Two clocks are concurrent if neither happens before the other AND they are not equal
+        if self.clocks == other.clocks {
+            return false; // Equal clocks are not concurrent
+        }
         !self.happens_before(other) && !other.happens_before(self)
     }
 }
@@ -361,6 +363,18 @@ impl From<&str> for CollectionId {
     }
 }
 
+impl<T> serde::Serialize for VectorClock<T>
+where
+    T: Clone + Eq + std::hash::Hash + serde::Serialize + serde::de::DeserializeOwned,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.clocks.serialize(serializer)
+    }
+}
+
 impl<'de, T> serde::Deserialize<'de> for VectorClock<T>
 where
     T: Clone + Eq + std::hash::Hash + serde::Serialize + serde::de::DeserializeOwned,
@@ -371,5 +385,284 @@ where
     {
         let clocks = HashMap::<T, u64>::deserialize(deserializer)?;
         Ok(VectorClock { clocks })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+    use uuid;
+
+    #[test]
+    fn test_vector_clock_new() {
+        let clock: VectorClock<String> = VectorClock::new();
+        assert!(clock.clocks.is_empty());
+    }
+
+    #[test]
+    fn test_vector_clock_increment() {
+        let mut clock = VectorClock::new();
+        
+        clock.increment("node1".to_string());
+        assert_eq!(clock.get(&"node1".to_string()), 1);
+        
+        clock.increment("node1".to_string());
+        assert_eq!(clock.get(&"node1".to_string()), 2);
+        
+        clock.increment("node2".to_string());
+        assert_eq!(clock.get(&"node2".to_string()), 1);
+        assert_eq!(clock.get(&"node1".to_string()), 2);
+    }
+
+    #[test]
+    fn test_vector_clock_get_nonexistent() {
+        let clock: VectorClock<String> = VectorClock::new();
+        assert_eq!(clock.get(&"nonexistent".to_string()), 0);
+    }
+
+    #[test]
+    fn test_vector_clock_merge() {
+        let mut clock1 = VectorClock::new();
+        clock1.increment("node1".to_string());
+        clock1.increment("node1".to_string());
+        clock1.increment("node2".to_string());
+
+        let mut clock2 = VectorClock::new();
+        clock2.increment("node1".to_string());
+        clock2.increment("node2".to_string());
+        clock2.increment("node2".to_string());
+        clock2.increment("node3".to_string());
+
+        clock1.merge(&clock2);
+
+        assert_eq!(clock1.get(&"node1".to_string()), 2); // max(2, 1) = 2
+        assert_eq!(clock1.get(&"node2".to_string()), 2); // max(1, 2) = 2
+        assert_eq!(clock1.get(&"node3".to_string()), 1); // max(0, 1) = 1
+    }
+
+    #[test]
+    fn test_vector_clock_happens_before() {
+        let mut clock1 = VectorClock::new();
+        clock1.increment("node1".to_string());
+        
+        let mut clock2 = VectorClock::new();
+        clock2.increment("node1".to_string());
+        clock2.increment("node1".to_string());
+
+        assert!(clock1.happens_before(&clock2));
+        assert!(!clock2.happens_before(&clock1));
+    }
+
+    #[test]
+    fn test_vector_clock_happens_before_with_multiple_nodes() {
+        let mut clock1 = VectorClock::new();
+        clock1.increment("node1".to_string());
+        clock1.increment("node2".to_string());
+        
+        let mut clock2 = VectorClock::new();
+        clock2.increment("node1".to_string());
+        clock2.increment("node1".to_string());
+        clock2.increment("node2".to_string());
+        clock2.increment("node3".to_string());
+
+        assert!(clock1.happens_before(&clock2));
+        assert!(!clock2.happens_before(&clock1));
+    }
+
+    #[test]
+    fn test_vector_clock_concurrent() {
+        let mut clock1 = VectorClock::new();
+        clock1.increment("node1".to_string());
+        clock1.increment("node1".to_string());
+        
+        let mut clock2 = VectorClock::new();
+        clock2.increment("node2".to_string());
+        clock2.increment("node2".to_string());
+
+        assert!(clock1.concurrent(&clock2));
+        assert!(clock2.concurrent(&clock1));
+    }
+
+    #[test]
+    fn test_vector_clock_not_concurrent_when_ordered() {
+        let mut clock1 = VectorClock::new();
+        clock1.increment("node1".to_string());
+        
+        let mut clock2 = VectorClock::new();
+        clock2.increment("node1".to_string());
+        clock2.increment("node1".to_string());
+
+        assert!(!clock1.concurrent(&clock2));
+        assert!(!clock2.concurrent(&clock1));
+    }
+
+    #[test]
+    fn test_vector_clock_equal_not_concurrent() {
+        let mut clock1 = VectorClock::new();
+        clock1.increment("node1".to_string());
+        clock1.increment("node2".to_string());
+        
+        let mut clock2 = VectorClock::new();
+        clock2.increment("node1".to_string());
+        clock2.increment("node2".to_string());
+
+        assert!(!clock1.concurrent(&clock2));
+        assert!(!clock2.concurrent(&clock1));
+        assert!(!clock1.happens_before(&clock2));
+        assert!(!clock2.happens_before(&clock1));
+    }    #[test]
+    fn test_document_creation() {
+        let data = json!({"name": "test", "value": 42});
+        let owner = NodeId(uuid::Uuid::new_v4());
+
+        let doc = Document::new(
+            DocumentId("test_doc".to_string()),
+            CollectionId("test_collection".to_string()),
+            data.clone(),
+            owner.clone(),
+        );
+
+        assert_eq!(doc.id.0, "test_doc");
+        assert_eq!(doc.collection.0, "test_collection");
+        assert_eq!(doc.data, data);
+        assert_eq!(doc.metadata.access_control.owner, owner);
+        assert_eq!(doc.metadata.version, 1);
+        assert!(!doc.is_encrypted());
+    }    #[test]
+    fn test_document_update() {
+        let initial_data = json!({"name": "test", "value": 42});
+        let updated_data = json!({"name": "updated", "value": 100});
+        let owner = NodeId(uuid::Uuid::new_v4());
+        let node = NodeId(uuid::Uuid::new_v4());
+
+        let mut doc = Document::new(
+            DocumentId("test_doc".to_string()),
+            CollectionId("test_collection".to_string()),
+            initial_data,
+            owner,
+        );
+
+        let initial_timestamp = doc.metadata.updated_at;
+        let initial_checksum = doc.metadata.checksum.clone();
+
+        // Small delay to ensure timestamp difference
+        std::thread::sleep(std::time::Duration::from_millis(1));
+
+        doc.update(updated_data.clone(), node.clone());
+
+        assert_eq!(doc.data, updated_data);
+        assert_eq!(doc.metadata.version, 2);
+        assert_eq!(doc.metadata.vector_clock.get(&node), 1);
+        assert!(doc.metadata.updated_at > initial_timestamp);
+        assert_ne!(doc.metadata.checksum, initial_checksum);
+    }
+
+    #[test]
+    fn test_document_id_display() {
+        let doc_id = DocumentId("test_document_123".to_string());
+        assert_eq!(format!("{}", doc_id), "test_document_123");
+    }
+
+    #[test]
+    fn test_collection_id_display() {
+        let col_id = CollectionId("users".to_string());
+        assert_eq!(format!("{}", col_id), "users");
+    }
+
+    #[test]
+    fn test_document_id_from_string() {
+        let doc_id: DocumentId = "test_doc".to_string().into();
+        assert_eq!(doc_id.0, "test_doc");
+
+        let doc_id: DocumentId = "test_doc".into();
+        assert_eq!(doc_id.0, "test_doc");
+    }
+
+    #[test]
+    fn test_collection_id_from_string() {
+        let col_id: CollectionId = "test_collection".to_string().into();
+        assert_eq!(col_id.0, "test_collection");
+
+        let col_id: CollectionId = "test_collection".into();
+        assert_eq!(col_id.0, "test_collection");
+    }
+
+    #[test]
+    fn test_vector_clock_serialization() {
+        let mut clock = VectorClock::new();
+        clock.increment("node1".to_string());
+        clock.increment("node2".to_string());
+        clock.increment("node1".to_string());
+
+        // Test serialization
+        let serialized = serde_json::to_string(&clock).unwrap();
+        
+        // Test deserialization
+        let deserialized: VectorClock<String> = serde_json::from_str(&serialized).unwrap();
+        
+        assert_eq!(deserialized.get(&"node1".to_string()), 2);
+        assert_eq!(deserialized.get(&"node2".to_string()), 1);
+    }
+
+    #[test]
+    fn test_operation_result() {
+        let success_result = OperationResult {
+            success: true,
+            data: Some("test data".to_string()),
+            error: None,
+            operation_id: Uuid::new_v4(),
+            timestamp: Utc::now(),
+        };
+
+        assert!(success_result.success);
+        assert!(success_result.data.is_some());
+        assert!(success_result.error.is_none());
+
+        let error_result: OperationResult<String> = OperationResult {
+            success: false,
+            data: None,
+            error: Some("Operation failed".to_string()),
+            operation_id: Uuid::new_v4(),
+            timestamp: Utc::now(),
+        };
+
+        assert!(!error_result.success);
+        assert!(error_result.data.is_none());
+        assert!(error_result.error.is_some());
+    }
+
+    #[test]
+    fn test_query_options_defaults() {
+        let options = QueryOptions {
+            limit: None,
+            offset: None,
+            sort: None,
+            projection: None,
+        };
+
+        assert!(options.limit.is_none());
+        assert!(options.offset.is_none());
+        assert!(options.sort.is_none());
+        assert!(options.projection.is_none());
+    }
+
+    #[test]
+    fn test_sort_field() {
+        let sort_field = SortField {
+            field: "age".to_string(),
+            direction: SortDirection::Ascending,
+        };
+
+        assert_eq!(sort_field.field, "age");
+        matches!(sort_field.direction, SortDirection::Ascending);
+
+        let sort_field_desc = SortField {
+            field: "name".to_string(),
+            direction: SortDirection::Descending,
+        };
+
+        assert_eq!(sort_field_desc.field, "name");
+        matches!(sort_field_desc.direction, SortDirection::Descending);
     }
 }

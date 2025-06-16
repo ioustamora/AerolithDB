@@ -182,6 +182,18 @@ impl DocumentFilter {
             _ => Ordering::Equal,
         }
     }
+
+    /// Filter documents based on the provided filter criteria.
+    ///
+    /// # Arguments
+    /// * `documents` - The documents to filter
+    /// * `filter` - The filter criteria in MongoDB query format
+    ///
+    /// # Returns
+    /// A vector containing the documents that match the filter criteria
+    pub fn filter_documents(documents: Vec<Value>, filter: &Value) -> Vec<Value> {
+        documents.into_iter().filter(|doc| Self::matches_filter(doc, filter)).collect()
+    }
 }
 
 /// Document sorting engine for applying sort orders to document collections.
@@ -276,5 +288,269 @@ impl DocumentPaginator {
         } else {
             documents[start..end].to_vec()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn test_document_filter_simple_equality() {
+        let documents = vec![
+            json!({"name": "Alice", "age": 30}),
+            json!({"name": "Bob", "age": 25}),
+            json!({"name": "Charlie", "age": 35}),
+        ];
+
+        let filter = json!({"name": "Alice"});
+        let result = DocumentFilter::filter_documents(documents, &filter);
+        
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0]["name"], "Alice");
+    }
+
+    #[test]
+    fn test_document_filter_comparison_operators() {
+        let documents = vec![
+            json!({"name": "Alice", "age": 30}),
+            json!({"name": "Bob", "age": 25}),
+            json!({"name": "Charlie", "age": 35}),
+        ];
+
+        // Test greater than
+        let filter = json!({"age": {"$gt": 30}});
+        let result = DocumentFilter::filter_documents(documents.clone(), &filter);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0]["name"], "Charlie");
+
+        // Test less than
+        let filter = json!({"age": {"$lt": 30}});
+        let result = DocumentFilter::filter_documents(documents.clone(), &filter);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0]["name"], "Bob");
+
+        // Test greater than or equal
+        let filter = json!({"age": {"$gte": 30}});
+        let result = DocumentFilter::filter_documents(documents.clone(), &filter);
+        assert_eq!(result.len(), 2);
+    }
+
+    #[test]
+    fn test_document_filter_in_operator() {
+        let documents = vec![
+            json!({"name": "Alice", "category": "admin"}),
+            json!({"name": "Bob", "category": "user"}),
+            json!({"name": "Charlie", "category": "moderator"}),
+        ];
+
+        let filter = json!({"category": {"$in": ["admin", "moderator"]}});
+        let result = DocumentFilter::filter_documents(documents, &filter);
+        
+        assert_eq!(result.len(), 2);
+        let names: Vec<&str> = result.iter()
+            .map(|doc| doc["name"].as_str().unwrap())
+            .collect();
+        assert!(names.contains(&"Alice"));
+        assert!(names.contains(&"Charlie"));
+    }
+
+    #[test]
+    fn test_document_filter_exists_operator() {
+        let documents = vec![
+            json!({"name": "Alice", "email": "alice@example.com"}),
+            json!({"name": "Bob"}),
+            json!({"name": "Charlie", "email": "charlie@example.com"}),
+        ];
+
+        let filter = json!({"email": {"$exists": true}});
+        let result = DocumentFilter::filter_documents(documents.clone(), &filter);
+        assert_eq!(result.len(), 2);
+
+        let filter = json!({"email": {"$exists": false}});
+        let result = DocumentFilter::filter_documents(documents, &filter);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0]["name"], "Bob");
+    }
+
+    #[test]
+    fn test_document_filter_nested_fields() {
+        let documents = vec![
+            json!({"user": {"profile": {"age": 30}}}),
+            json!({"user": {"profile": {"age": 25}}}),
+            json!({"user": {"profile": {"age": 35}}}),
+        ];
+
+        let filter = json!({"user.profile.age": {"$gt": 25}});
+        let result = DocumentFilter::filter_documents(documents, &filter);
+        
+        assert_eq!(result.len(), 2);
+    }    #[test]
+    fn test_document_sorter_single_field() {
+        let mut documents = vec![
+            json!({"name": "Charlie", "age": 35}),
+            json!({"name": "Alice", "age": 30}),
+            json!({"name": "Bob", "age": 25}),
+        ];
+
+        let sort_spec = json!({"age": 1}); // ascending
+        DocumentSorter::sort_documents(&mut documents, &sort_spec);
+        
+        assert_eq!(documents[0]["name"], "Bob");
+        assert_eq!(documents[1]["name"], "Alice");
+        assert_eq!(documents[2]["name"], "Charlie");
+
+        let sort_spec = json!({"age": -1}); // descending
+        DocumentSorter::sort_documents(&mut documents, &sort_spec);
+        
+        assert_eq!(documents[0]["name"], "Charlie");
+        assert_eq!(documents[1]["name"], "Alice");
+        assert_eq!(documents[2]["name"], "Bob");
+    }    #[test]
+    fn test_document_sorter_multiple_fields() {
+        let mut documents = vec![
+            json!({"department": "Engineering", "name": "Bob"}),
+            json!({"department": "Engineering", "name": "Alice"}),
+            json!({"department": "Marketing", "name": "Charlie"}),
+        ];
+
+        let sort_spec = json!({"department": 1, "name": 1});
+        DocumentSorter::sort_documents(&mut documents, &sort_spec);
+        
+        assert_eq!(documents[0]["name"], "Alice");
+        assert_eq!(documents[1]["name"], "Bob");
+        assert_eq!(documents[2]["name"], "Charlie");
+    }    #[test]
+    fn test_document_sorter_string_direction() {
+        let mut documents = vec![
+            json!({"name": "Charlie", "age": 35}),
+            json!({"name": "Alice", "age": 30}),
+            json!({"name": "Bob", "age": 25}),
+        ];
+
+        let sort_spec = json!({"age": "desc"});
+        DocumentSorter::sort_documents(&mut documents, &sort_spec);
+        
+        assert_eq!(documents[0]["name"], "Charlie");
+        assert_eq!(documents[1]["name"], "Alice");
+        assert_eq!(documents[2]["name"], "Bob");
+    }
+
+    #[test]
+    fn test_document_paginator_basic() {
+        let documents = vec![
+            json!({"id": 1}),
+            json!({"id": 2}),
+            json!({"id": 3}),
+            json!({"id": 4}),
+            json!({"id": 5}),
+        ];
+
+        // Test with both offset and limit
+        let result = DocumentPaginator::paginate_documents(documents.clone(), Some(1), Some(2));
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0]["id"], 2);
+        assert_eq!(result[1]["id"], 3);
+
+        // Test with only limit
+        let result = DocumentPaginator::paginate_documents(documents.clone(), None, Some(3));
+        assert_eq!(result.len(), 3);
+        assert_eq!(result[0]["id"], 1);
+        assert_eq!(result[2]["id"], 3);
+
+        // Test with only offset
+        let result = DocumentPaginator::paginate_documents(documents.clone(), Some(3), None);
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0]["id"], 4);
+        assert_eq!(result[1]["id"], 5);
+    }
+
+    #[test]
+    fn test_document_paginator_edge_cases() {
+        let documents = vec![
+            json!({"id": 1}),
+            json!({"id": 2}),
+        ];
+
+        // Test offset beyond documents length
+        let result = DocumentPaginator::paginate_documents(documents.clone(), Some(5), Some(2));
+        assert_eq!(result.len(), 0);
+
+        // Test limit larger than remaining documents
+        let result = DocumentPaginator::paginate_documents(documents.clone(), Some(1), Some(5));
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0]["id"], 2);
+
+        // Test with empty documents
+        let result = DocumentPaginator::paginate_documents(vec![], Some(0), Some(5));
+        assert_eq!(result.len(), 0);
+    }
+
+    #[test]
+    fn test_value_comparison() {
+        // Test number comparisons
+        assert!(DocumentFilter::compare_values(&json!(10), &json!(5)) == std::cmp::Ordering::Greater);
+        assert!(DocumentFilter::compare_values(&json!(5), &json!(10)) == std::cmp::Ordering::Less);
+        assert!(DocumentFilter::compare_values(&json!(5), &json!(5)) == std::cmp::Ordering::Equal);
+
+        // Test string comparisons
+        assert!(DocumentFilter::compare_values(&json!("zebra"), &json!("apple")) == std::cmp::Ordering::Greater);
+        assert!(DocumentFilter::compare_values(&json!("apple"), &json!("zebra")) == std::cmp::Ordering::Less);
+        assert!(DocumentFilter::compare_values(&json!("same"), &json!("same")) == std::cmp::Ordering::Equal);
+
+        // Test boolean comparisons
+        assert!(DocumentFilter::compare_values(&json!(true), &json!(false)) == std::cmp::Ordering::Greater);
+        assert!(DocumentFilter::compare_values(&json!(false), &json!(true)) == std::cmp::Ordering::Less);
+    }
+
+    #[test]
+    fn test_nested_field_access() {
+        let document = json!({
+            "user": {
+                "profile": {
+                    "contact": {
+                        "email": "test@example.com"
+                    }
+                }
+            }
+        });
+
+        let result = DocumentFilter::get_nested_field(&document, "user.profile.contact.email");
+        assert_eq!(result, json!("test@example.com"));
+
+        let result = DocumentFilter::get_nested_field(&document, "user.profile.nonexistent");
+        assert_eq!(result, Value::Null);
+
+        let result = DocumentFilter::get_nested_field(&document, "user");
+        assert!(result.is_object());
+    }
+
+    #[test]
+    fn test_complex_filter_and_sort_combination() {
+        let documents = vec![
+            json!({"name": "Alice", "age": 30, "department": "Engineering"}),
+            json!({"name": "Bob", "age": 25, "department": "Engineering"}),
+            json!({"name": "Charlie", "age": 35, "department": "Marketing"}),
+            json!({"name": "Diana", "age": 28, "department": "Engineering"}),
+        ];
+
+        // Filter for Engineering department and age > 25
+        let filter = json!({"department": "Engineering", "age": {"$gt": 25}});        let mut filtered = DocumentFilter::filter_documents(documents, &filter);
+        
+        assert_eq!(filtered.len(), 2); // Alice and Diana
+        
+        // Sort by age descending
+        let sort_spec = json!({"age": -1});
+        DocumentSorter::sort_documents(&mut filtered, &sort_spec);
+        
+        assert_eq!(filtered[0]["name"], "Alice"); // age 30
+        assert_eq!(filtered[1]["name"], "Diana"); // age 28
+        
+        // Paginate to get only first result
+        let paginated = DocumentPaginator::paginate_documents(filtered, Some(0), Some(1));
+        
+        assert_eq!(paginated.len(), 1);
+        assert_eq!(paginated[0]["name"], "Alice");
     }
 }

@@ -42,12 +42,14 @@ dependencies = [
  "aerolithdb-security",
  "aerolithdb-storage",
  "anyhow",
+ "chrono",
  "criterion",
  "proptest",
  "serde_json",
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]

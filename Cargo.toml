@@ -102,6 +102,8 @@ serde_json = { workspace = true }
 [dev-dependencies]
 criterion = { workspace = true }
 proptest = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
 
 [[bin]]
 name = "aerolithdb"

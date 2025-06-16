@@ -8,10 +8,10 @@
 
 use anyhow::{Result, anyhow};
 use serde_json::{Value, from_str as json_from_str};
-use tracing::{info, warn, error};
+use tracing::{info, warn};
 use std::path::Path;
 use tokio::fs;
-use futures::stream::{StreamExt, TryStreamExt};
+use futures::stream::StreamExt;
 
 use crate::client::aerolithsClient;
 use crate::args::{BatchPutArgs, BatchDeleteArgs, BatchImportArgs, BatchExportArgs};

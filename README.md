@@ -34,200 +34,52 @@
 - ⚡ **High Performance**: Sub-millisecond memory access, <10ms SSD operations, distributed consensus
 - 🔌 **Extensible**: Plugin system with secure sandboxing and runtime loading capabilities
 
-## 🎯 Production Status
+## 🚀 Quick Start & Demo
 
-**Build Status**: ✅ Stable  
-**Battle Test Results**: ✅ 100% Success (124 operations across 6 nodes)  
-**Latest Release**: December 2024  
+### Multi-Node Demo Scripts
 
-### Core Capabilities
+Experience AerolithDB's distributed functionality immediately with our cross-platform demo scripts:
 
-**🏗️ Storage & Data Management**
-- 4-tier intelligent storage hierarchy (Memory → SSD → Distributed → Archive)
-- Real-time document CRUD operations with automatic tier promotion
-- Advanced query engine with filtering, sorting, and pagination
-- Production-ready sled backend with persistent storage
-
-**🌐 Distributed Systems**
-- Multi-node cluster formation and consensus algorithms
-- Network partition tolerance with automatic recovery
-- Cross-node data replication and synchronization
-- Byzantine fault tolerance for enterprise reliability
-
-**📡 API & Integration**
-- Production REST API with comprehensive CRUD endpoints
-- Multi-protocol support (GraphQL/gRPC/WebSocket frameworks ready)
-- Full-featured CLI client with analytics and administration
-- Plugin system with secure sandboxing and runtime loading
-
-**🔐 Security & Compliance**
-- Zero-trust architecture with end-to-end encryption
-- Fine-grained access control and authentication
-- Comprehensive audit logging and compliance frameworks
-- Enterprise-ready security valiaerolithon across distributed nodes
-
-**⚡ Performance & Reliability**
-- Sub-millisecond memory cache operations
-- <10ms SSD storage access times
-- Real-time performance metrics and monitoring
-- Validated throughput: 100+ operations/second with 0ms average latency
-
-## 🌟 Key Features
-
-### 🚀 High Performance Architecture
-- **Multi-Tier Storage**: Intelligent data tiering across Memory (L1) → SSD (L2) → Distributed (L3) → Archive (L4)
-- **Intelligent Caching**: ML-driven cache optimization with predictive eviction policies
-- **Advanced Query Engine**: Cost-based optimization with distributed execution planning
-- **Parallel Processing**: Multi-threaded operations with optimal resource utilization
-
-### 🌐 Distributed Systems Excellence
-- **Byzantine Fault Tolerance**: Handles up to 1/3 malicious nodes using PBFT consensus algorithm
-- **Network Partition Recovery**: Automatic detection and intelligent healing of network splits
-- **Conflict Resolution**: Sophisticated resolution of concurrent operations with vector clocks
-- **Horizontal Scaling**: Seamless cluster expansion with consistent hashing and rebalancing
-
-### 📡 Multi-Protocol API Gateway
-- **REST API**: Full HTTP/JSON interface with OpenAPI compliance
-- **GraphQL**: Flexible query language with introspection support
-- **gRPC**: High-performance binary protocol for microservices
-- **WebSocket**: Real-time bidirectional communication for live applications
-
-### 🔐 Enterprise Security Framework
-- **Zero-Trust Architecture**: End-to-end encryption with cryptographic node identity
-- **Fine-Grained Access Control**: Attribute-based permissions with comprehensive audit trails
-- **Compliance Ready**: Built-in support for GDPR, HIPAA, and SOX regulatory requirements
-- **Cryptographic Agility**: Multiple encryption algorithms with automatic key rotation
-
-### 🔌 Extensible Plugin System
-- **Secure Sandboxing**: Isolated plugin execution with resource quotas
-- **Hot-Swappable**: Runtime plugin loading without system downtime
-- **Multiple Categories**: Storage, query, security, analytics, and integration plugins
-- **Event-Driven**: Comprehensive event system for plugin coordination
-
-## 🏗️ Architecture
-
-aerolithsDB implements a modular, layered architecture optimized for distributed environments:
-
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                    Multi-Protocol API Gateway                   │
-│  REST (8080) │ GraphQL (8081) │ gRPC (8082) │ WebSocket (8083) │
-├─────────────────────────────────────────────────────────────────┤
-│                     Query Processing Engine                     │
-│    Advanced Filtering │ Cost Optimization │ Distributed Exec  │
-├─────────────────────────────────────────────────────────────────┤
-│                   Intelligent Cache System                      │
-│     L1 Memory Cache │ L2 SSD Cache │ L3 Distributed Cache      │
-├─────────────────────────────────────────────────────────────────┤
-│                   Consensus & Coordination                      │
-│   Byzantine PBFT │ Conflict Resolution │ Partition Recovery    │
-├─────────────────────────────────────────────────────────────────┤
-│                    Storage Hierarchy                           │
-│  Hot (Memory) │ Warm (SSD) │ Cold (Distributed) │ Archive      │
-├─────────────────────────────────────────────────────────────────┤
-│                  Network & Security Layer                       │
-│     P2P Networking │ Zero-Trust Security │ Plugin System       │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Core Modules
-
-- **aerolithsdb-core**: Central orchestration engine with lifecycle management
-- **aerolithsdb-api**: Multi-protocol gateway (REST, GraphQL, gRPC, WebSocket)
-- **aerolithsdb-query**: Advanced query engine with distributed processing
-- **aerolithsdb-storage**: 4-tier storage hierarchy with automatic data lifecycle
-- **aerolithsdb-cache**: ML-driven intelligent caching with predictive algorithms
-- **aerolithsdb-consensus**: Byzantine fault-tolerant consensus and conflict resolution
-- **aerolithsdb-network**: P2P networking and cluster communication
-- **aerolithsdb-security**: Zero-trust security framework with comprehensive encryption
-- **aerolithsdb-plugins**: Extensible plugin system with secure sandboxing
-- **aerolithsdb-cli**: Full-featured command-line client with analytics
-
-## 📊 Performance Metrics
-
-**Battle Test Results**: ✅ 100% Success - 124 operations across 6 nodes in 211ms
-
-| Component | Target Latency | Target Throughput | Valiaerolithon Status |
-|-----------|----------------|-------------------|-------------------|
-| Memory Cache (L1) | ~1μs | ~100GB/s | ✅ Production validated with sub-millisecond access |
-| SSD Cache (L2) | ~100μs | ~10GB/s | ✅ Persistent storage with sled backend |
-| Distributed Storage (L3) | ~1ms | ~1GB/s | ✅ Multi-node consensus and replication |
-| Object Storage (L4) | ~10ms | ~100MB/s | ✅ Archival tier with metadata tracking |
-| REST API | <10ms | 10k req/s | ✅ Full CRUD operations with error handling |
-| Query Engine | <5ms | 5k queries/s | ✅ Filtering, sorting, pagination validated |
-| Consensus Operations | 10-100ms | 1k ops/s | ✅ Byzantine fault tolerance across 6 nodes |
-| Network Replication | <50ms | 100MB/s | ✅ Cross-node data synchronization |
-
-**Validated Performance**: Battle test demonstrates 100+ operations/second with 0ms average latency across distributed nodes.
-
-## 🔥 Battle Test Valiaerolithon
-
-**Status**: ✅ **PASSED** - aerolithsDB successfully completed comprehensive distributed operations testing
-
-### 📊 Test Results Summary
-- **Total Test Duration**: 211.56ms
-- **Nodes Tested**: 6 (1 bootstrap + 5 regular nodes)
-- **Operations Executed**: 124 across all nodes
-- **Error Rate**: 0% (Perfect reliability)
-- **Performance**: 100 operations/second with 0ms average latency
-
-### ✅ Validated Capabilities
-
-#### **Distributed Operations**
-- Multi-node cluster formation and management
-- Cross-node data replication and synchronization
-- Distributed consensus and conflict resolution
-- Network partition tolerance and automatic recovery
-
-#### **Data Management**
-- Complete document lifecycle (Create, Read, Update, Delete)
-- Automatic storage tier promotion (Memory → SSD → Distributed → Archive)
-- Real-time metadata tracking and versioning
-- Query processing with filtering, sorting, and pagination
-
-#### **Security & Authentication**
-- Encryption of sensitive data at rest and in transit
-- Authentication and authorization across distributed nodes
-- Admin operations and governance policy enforcement
-- Comprehensive audit logging and compliance
-
-#### **Performance & Reliability**
-- Sub-millisecond memory cache operations
-- Persistent SSD storage with <10ms access times
-- Load balancing across multiple storage tiers
-- Real-time performance metrics and statistics
-
-**This valiaerolithon demonstrates that aerolithsDB is production-ready for distributed NoSQL operations.**
-
-## 🚀 Quick Start
-
-### Installation
-
-#### Build from Source
-
+#### Quick 3-Node Demo (5 minutes)
 ```bash
-# Clone the repository
-git clone https://github.com/your-org/aerolithsdb.git
-cd aerolithsdb
+# Windows (PowerShell)
+.\scripts\quick-demo.ps1
 
-# Build the project (requires Rust 1.70+)
-cargo build --release
-
-# Start the database server
-./target/release/aerolithsdb
+# Linux/macOS (Bash)
+chmod +x scripts/quick-demo.sh
+./scripts/quick-demo.sh
 ```
 
-#### Docker Deployment
+**What it demonstrates:**
+- Bootstrap node + 2 regular nodes
+- Document creation and cross-node replication
+- Health monitoring across the network
+- Distributed operations in action
 
+#### Full Network Demo (Production-scale)
 ```bash
-# Pull and run with default configuration
-docker pull aerolithsdb/aerolithsdb:latest
-docker run -p 8080:8080 -p 8081:8081 -p 8082:8082 aerolithsdb/aerolithsdb:latest
+# Windows (PowerShell) - 4 nodes
+.\scripts\launch-local-network.ps1
+
+# Linux/macOS (Bash) - 4 nodes  
+chmod +x scripts/launch-local-network.sh
+./scripts/launch-local-network.sh
+
+# Custom configuration (6 nodes with verbose logging)
+.\scripts\launch-local-network.ps1 -NodesCount 6 -Verbose
+./scripts/launch-local-network.sh -n 6 -v
 ```
 
-### Getting Started
+**What it demonstrates:**
+- Bootstrap + 4 regular nodes in P2P mesh
+- Comprehensive user simulation (CRUD operations)
+- Cross-node queries and analytics  
+- Administrative operations and monitoring
+- Network resilience and health checks
 
-**1. Start the Database**
+See [scripts/README.md](scripts/README.md) for detailed documentation.
+
+### Single Node Quick Start
 
 ```bash
 # Default configuration
@@ -237,7 +89,7 @@ aerolithsdb
 aerolithsdb --config /path/to/config.toml
 ```
 
-**2. Verify Installation**
+**Verify Installation**
 
 ```bash
 # Health check
@@ -247,7 +99,7 @@ curl http://localhost:8080/health
 curl http://localhost:8080/api/v1/stats
 ```
 
-**3. Create Your First Document**
+**Create Your First Document**
 
 ```bash
 # Using REST API

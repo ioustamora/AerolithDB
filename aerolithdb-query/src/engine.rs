@@ -176,7 +176,7 @@ impl QueryEngine {
                 return Ok(QueryResult::empty(start_time.elapsed()));
             }
         };        let mut matching_documents = Vec::new();        let mut from_cache_count = 0;
-        let mut scanned_count = 0;
+        let mut _scanned_count = 0;
 
         // Fetch and filter documents with optimization
         // Current implementation: Basic document retrieval with filtering
@@ -186,7 +186,7 @@ impl QueryEngine {
         // - Vectorized filter evaluation
         // - Early termination for LIMIT queries
         for doc_id in &document_ids {
-            scanned_count += 1;
+            _scanned_count += 1;
             
             match self.storage.get_document(collection, doc_id).await {
                 Ok(storage_result) => {

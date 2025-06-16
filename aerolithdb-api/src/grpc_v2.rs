@@ -88,12 +88,10 @@ impl GRPCAPIv2 {
         // Start enhanced gRPC server
         let _server_handle = tokio::spawn(async move {
             info!("🌟 Enhanced gRPC API v2 ready for cross-language clients on {}", addr);
-            
-            #[cfg(feature = "protobuf")]
+              #[cfg(feature = "protobuf")]
             {
                 // Use generated Protocol Buffer types when available
-                use crate::proto::*;
-                
+                // Note: proto module import would be needed here
                 info!("✨ Using generated Protocol Buffer types for maximum compatibility");
                 // Implementation would use generated DataServiceServer::new()
             }

@@ -217,10 +217,9 @@ impl RealtimeAPI {
         info!("Starting realtime WebSocket API on {}:{}", self.config.bind_address, self.config.port);
 
         // Start WebSocket server with event streaming capabilities
-        let connection_manager = Arc::clone(&self.connection_manager);
-        let query_engine = Arc::clone(&self.query);
-        let security_framework = Arc::clone(&self.security);
-        let config = self.config.clone();
+        let connection_manager = Arc::clone(&self.connection_manager);        let _query_engine = Arc::clone(&self.query);
+        let _security_framework = Arc::clone(&self.security);
+        let _config = self.config.clone();
 
         tokio::spawn(async move {
             info!("WebSocket server with real-time event streaming started");

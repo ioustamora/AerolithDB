@@ -3,7 +3,6 @@
 
 use aerolithdb_storage::{StorageHierarchy, StorageConfig, ShardingStrategy, CompressionConfig, CompressionAlgorithm};
 use std::path::PathBuf;
-use tracing::{debug, error};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {    println!("Starting minimal storage test");

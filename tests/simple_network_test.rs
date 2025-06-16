@@ -239,7 +239,7 @@ impl SimpleNetworkBattleTest {
         // READ operations
         let start_time = Instant::now();
         let store = test_node.data_store.read().await;
-        if let Some(doc) = store.get("user_1") {
+        if let Some(_doc) = store.get("user_1") {
             let latency = start_time.elapsed().as_millis() as f64;
             info!("✅ Read document user_1 in {}ms", latency);
             self.update_metrics_success(latency).await;

@@ -284,7 +284,7 @@ impl GRPCAPIv1 {
     }    pub async fn start(&self) -> Result<()> {
         info!("Starting gRPC API v1 on {}:{}", self.config.bind_address, self.config.port);
 
-        let data_service = DataServiceImpl {
+        let _data_service = DataServiceImpl {
             query: Arc::clone(&self.query),
             security: Arc::clone(&self.security),
         };

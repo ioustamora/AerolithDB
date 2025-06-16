@@ -1,0 +1,140 @@
+{
+  "node": {
+    "node_id": "99905429-c916-411f-8b4a-dbb788689c47",
+    "data_dir": "./data",
+    "bind_address": "0.0.0.0",
+    "port": 9000,
+    "external_address": null
+  },
+  "network": {
+    "network_id": "default",
+    "network_name": "aerolithsDB Network",
+    "governance_policy": "default",
+    "bootstrap_nodes": [],
+    "max_connections": 100,
+    "connection_timeout": {
+      "secs": 30,
+      "nanos": 0
+    },
+    "heartbeat_interval": {
+      "secs": 10,
+      "nanos": 0
+    }
+  },
+  "storage": {
+    "sharding_strategy": "ConsistentHashing",
+    "replication_factor": 3,
+    "compression": {
+      "algorithm": "LZ4",
+      "level": 6,
+      "adaptive": true
+    },
+    "encryption_at_rest": true,
+    "data_dir": "./data/storage",
+    "max_storage_size": null
+  },
+  "cache": {
+    "hierarchy": [
+      "Memory",
+      "NVMe",
+      "Network"
+    ],
+    "ml_prefetching": true,
+    "compression": true,
+    "ttl_strategy": "Adaptive",
+    "max_memory_usage": 1073741824
+  },
+  "security": {
+    "zero_trust": true,
+    "encryption_algorithm": "XChaCha20Poly1305",
+    "key_rotation_interval": {
+      "secs": 2592000,
+      "nanos": 0
+    },
+    "audit_level": "Full",
+    "compliance_mode": "GDPR"
+  },
+  "consensus": {
+    "algorithm": "ByzantinePBFT",
+    "byzantine_tolerance": 0.33,
+    "timeout": {
+      "secs": 5,
+      "nanos": 0
+    },
+    "max_batch_size": 1000,
+    "conflict_resolution": "LastWriterWins"
+  },
+  "query": {
+    "optimizer": {
+      "cost_based": true,
+      "statistics_enabled": true,
+      "max_optimization_time": {
+        "secs": 1,
+        "nanos": 0
+      }
+    },
+    "execution_timeout": {
+      "secs": 30,
+      "nanos": 0
+    },
+    "max_concurrent_queries": 100,
+    "index_advisor": true
+  },
+  "api": {
+    "rest_api": {
+      "enabled": true,
+      "bind_address": "0.0.0.0",
+      "port": 8080,
+      "cors_enabled": true
+    },
+    "graphql_api": {
+      "enabled": true,
+      "bind_address": "0.0.0.0",
+      "port": 8081,
+      "introspection": true,
+      "playground": false
+    },
+    "grpc_api": {
+      "enabled": true,
+      "bind_address": "0.0.0.0",
+      "port": 8082,
+      "reflection": true
+    },
+    "websocket_api": {
+      "enabled": true,
+      "bind_address": "0.0.0.0",
+      "port": 8083,
+      "max_connections": 1000
+    }
+  },
+  "plugins": {
+    "plugin_dir": "./plugins",
+    "auto_load": true,
+    "security_policy": "Restrictive"
+  },
+  "observability": {
+    "metrics": {
+      "enabled": true,
+      "prometheus_endpoint": "http://localhost:9090",
+      "collection_interval": {
+        "secs": 15,
+        "nanos": 0
+      }
+    },
+    "tracing": {
+      "enabled": true,
+      "jaeger_endpoint": "http://localhost:14268",
+      "sampling_ratio": 0.1
+    },
+    "logging": {
+      "level": "info",
+      "file_output": null,
+      "structured": true
+    },
+    "alerting": {
+      "enabled": false,
+      "webhook_url": null,
+      "thresholds": {}
+    }
+  }
+}
