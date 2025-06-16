@@ -1,0 +1,27 @@
+[package]
+name = "aerolithdb-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+dashmap = { workspace = true }
+dryoc = { workspace = true }
+base58 = { workspace = true }
+blake3 = { workspace = true }
+
+aerolithdb-consensus = { path = "../aerolithdb-consensus" }
+aerolithdb-storage = { path = "../aerolithdb-storage" }
+aerolithdb-network = { path = "../aerolithdb-network" }
+aerolithdb-cache = { path = "../aerolithdb-cache" }
+aerolithdb-security = { path = "../aerolithdb-security" }
+aerolithdb-query = { path = "../aerolithdb-query" }
+aerolithdb-api = { path = "../aerolithdb-api" }
+aerolithdb-plugins = { path = "../aerolithdb-plugins" }

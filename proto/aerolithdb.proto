@@ -1,0 +1,187 @@
+// aerolithsDB Protocol Buffer Definitions
+// This file defines the gRPC service interface and message types for aerolithsDB
+// providing cross-language client support and type-safe communication.
+
+syntax = "proto3";
+
+package aerolithsdb.v1;
+
+// Data service for document operations
+service DataService {
+  // Retrieve a document by collection and ID
+  rpc GetDocument(GetDocumentRequest) returns (GetDocumentResponse);
+  
+  // Store or update a document
+  rpc PutDocument(PutDocumentRequest) returns (PutDocumentResponse);
+  
+  // Delete a document
+  rpc DeleteDocument(DeleteDocumentRequest) returns (DeleteDocumentResponse);
+  
+  // Query documents with filtering and pagination
+  rpc QueryDocuments(QueryDocumentsRequest) returns (QueryDocumentsResponse);
+  
+  // Get database statistics
+  rpc GetStats(GetStatsRequest) returns (GetStatsResponse);
+  
+  // Health check endpoint
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+// Message definitions for document operations
+
+message GetDocumentRequest {
+  string collection = 1;
+  string document_id = 2;
+}
+
+message GetDocumentResponse {
+  oneof result {
+    Document document = 1;
+    Error error = 2;
+  }
+}
+
+message PutDocumentRequest {
+  string collection = 1;
+  string document_id = 2;
+  bytes data = 3;  // JSON document as bytes
+  map<string, string> metadata = 4;
+}
+
+message PutDocumentResponse {
+  oneof result {
+    PutResult success = 1;
+    Error error = 2;
+  }
+}
+
+message DeleteDocumentRequest {
+  string collection = 1;
+  string document_id = 2;
+}
+
+message DeleteDocumentResponse {
+  oneof result {
+    DeleteResult success = 1;
+    Error error = 2;
+  }
+}
+
+message QueryDocumentsRequest {
+  string collection = 1;
+  optional QueryFilter filter = 2;
+  optional QuerySort sort = 3;
+  optional uint32 limit = 4;
+  optional uint32 offset = 5;
+}
+
+message QueryDocumentsResponse {
+  oneof result {
+    QueryResult success = 1;
+    Error error = 2;
+  }
+}
+
+message GetStatsRequest {
+  optional string collection = 1;  // If empty, get stats for all collections
+}
+
+message GetStatsResponse {
+  oneof result {
+    DatabaseStats stats = 1;
+    Error error = 2;
+  }
+}
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  enum ServingStatus {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+    SERVICE_UNKNOWN = 3;
+  }
+  ServingStatus status = 1;
+}
+
+// Core data types
+
+message Document {
+  string id = 1;
+  string collection = 2;
+  bytes data = 3;  // JSON document as bytes
+  map<string, string> metadata = 4;
+  int64 version = 5;
+  string created_at = 6;
+  string updated_at = 7;
+}
+
+message PutResult {
+  string document_id = 1;
+  int64 version = 2;
+  bool created = 3;  // true if created, false if updated
+}
+
+message DeleteResult {
+  string document_id = 1;
+  bool deleted = 2;
+}
+
+message QueryResult {
+  repeated Document documents = 1;
+  uint32 total_count = 2;
+  uint32 offset = 3;
+  uint32 limit = 4;
+  double execution_time_ms = 5;
+}
+
+message QueryFilter {
+  map<string, string> equals = 1;  // Simple equality filters
+  map<string, string> contains = 2;  // String contains filters
+  // Additional filter types can be added here
+}
+
+message QuerySort {
+  repeated SortField fields = 1;
+}
+
+message SortField {
+  string field = 1;
+  enum SortOrder {
+    ASC = 0;
+    DESC = 1;
+  }
+  SortOrder order = 2;
+}
+
+message DatabaseStats {
+  repeated CollectionStats collections = 1;
+  uint64 total_documents = 2;
+  uint64 total_size_bytes = 3;
+  string database_version = 4;
+  int64 uptime_seconds = 5;
+}
+
+message CollectionStats {
+  string name = 1;
+  uint64 document_count = 2;
+  uint64 size_bytes = 3;
+  string created_at = 4;
+  string last_modified = 5;
+}
+
+message Error {
+  enum ErrorCode {
+    UNKNOWN = 0;
+    NOT_FOUND = 1;
+    ALREADY_EXISTS = 2;
+    INVALID_ARGUMENT = 3;
+    PERMISSION_DENIED = 4;
+    INTERNAL_ERROR = 5;
+    SERVICE_UNAVAILABLE = 6;
+  }
+  ErrorCode code = 1;
+  string message = 2;
+  map<string, string> details = 3;
+}

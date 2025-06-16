@@ -1,0 +1,28 @@
+[package]
+name = "aerolithdb-storage"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+dashmap = { workspace = true }
+blake3 = "1.5"
+
+# Storage backends
+sled = { workspace = true }
+# rocksdb = { workspace = true } # Temporarily disabled due to zstd-sys build issues
+
+# Compression libraries
+lz4_flex = "0.11"
+snap = "1.1"
+flate2 = "1.0"
+
+# Async utilities
+futures = { workspace = true }
