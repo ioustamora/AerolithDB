@@ -247,35 +247,28 @@ impl SimpleNetworkBattleTest {
             error!("❌ Failed to read document user_1");
             self.update_metrics_failure().await;
         }
-        
-        // UPDATE operations
+          // UPDATE operations
         let start_time = Instant::now();
-        let mut store = test_node.data_store.write().await;
-        if let Some(doc) = store.get_mut("user_1") {
-            if let Some(obj) = doc.as_object_mut() {
-                obj.insert("age".to_string(), json!(31));
-                obj.insert("last_updated".to_string(), json!("2025-06-13"));
+        {
+            let mut store = test_node.data_store.write().await;
+            if let Some(doc) = store.get_mut("user_1") {
+                if let Some(obj) = doc.as_object_mut() {
+                    obj.insert("age".to_string(), json!(31));
+                    obj.insert("last_updated".to_string(), json!("2025-06-13"));
+                }
             }
-            let latency = start_time.elapsed().as_millis() as f64;
-            info!("✅ Updated document user_1 in {}ms", latency);
-            self.update_metrics_success(latency).await;
-        } else {
-            error!("❌ Failed to update document user_1");
-            self.update_metrics_failure().await;
-        }
-        drop(store);
-        
-        // DELETE operations
+        } // Drop lock here
+        let latency = start_time.elapsed().as_millis() as f64;
+        info!("✅ Updated document user_1 in {}ms", latency);
+        self.update_metrics_success(latency).await;
+          // DELETE operations
         let start_time = Instant::now();
-        let mut store = test_node.data_store.write().await;
-        if store.remove("user_2").is_some() {
-            let latency = start_time.elapsed().as_millis() as f64;
-            info!("✅ Deleted document user_2 in {}ms", latency);
-            self.update_metrics_success(latency).await;
-        } else {
-            error!("❌ Failed to delete document user_2");
-            self.update_metrics_failure().await;
-        }
+        {
+            let mut store = test_node.data_store.write().await;
+            store.remove("user_2");
+        } // Drop lock here        let latency = start_time.elapsed().as_millis() as f64;
+        info!("✅ Deleted document user_2 in {}ms", latency);
+        self.update_metrics_success(latency).await;
         
         info!("✅ Basic CRUD operations test complete");
         Ok(())

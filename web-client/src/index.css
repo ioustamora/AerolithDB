@@ -1,0 +1,276 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f0f2f5;
+  color: #000000d9;
+  line-height: 1.5715;
+}
+
+code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier,
+    monospace;
+}
+
+/* Application layout */
+.app-layout {
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: #001529;
+  color: white;
+}
+
+.app-logo {
+  display: flex;
+  align-items: center;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.app-logo:hover {
+  color: #1890ff;
+}
+
+.app-sider {
+  background: #001529;
+}
+
+.app-content {
+  margin: 24px;
+  padding: 24px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  min-height: calc(100vh - 112px);
+}
+
+/* Connection status indicator */
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.connection-status.connected {
+  background: #f6ffed;
+  color: #52c41a;
+  border: 1px solid #b7eb8f;
+}
+
+.connection-status.disconnected {
+  background: #fff2f0;
+  color: #f5222d;
+  border: 1px solid #ffccc7;
+}
+
+.connection-status.connecting {
+  background: #fffbe6;
+  color: #faad14;
+  border: 1px solid #ffe58f;
+}
+
+/* Status dot animation */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.connected {
+  background: #52c41a;
+}
+
+.status-dot.disconnected {
+  background: #f5222d;
+}
+
+.status-dot.connecting {
+  background: #faad14;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .app-content {
+    margin: 12px;
+    padding: 16px;
+  }
+  
+  .app-header {
+    padding: 0 16px;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Loading states */
+.loading-skeleton {
+  animation: pulse-skeleton 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-skeleton {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Error states */
+.error-container {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.error-icon {
+  font-size: 64px;
+  color: #f5222d;
+  margin-bottom: 16px;
+}
+
+.error-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 8px;
+}
+
+.error-description {
+  color: #8c8c8c;
+  margin-bottom: 24px;
+}
+
+/* Success states */
+.success-container {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.success-icon {
+  font-size: 64px;
+  color: #52c41a;
+  margin-bottom: 16px;
+}
+
+/* Utility classes */
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.mb-8 {
+  margin-bottom: 8px;
+}
+
+.mb-16 {
+  margin-bottom: 16px;
+}
+
+.mb-24 {
+  margin-bottom: 24px;
+}
+
+.mt-8 {
+  margin-top: 8px;
+}
+
+.mt-16 {
+  margin-top: 16px;
+}
+
+.mt-24 {
+  margin-top: 24px;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-8 {
+  gap: 8px;
+}
+
+.gap-16 {
+  gap: 16px;
+}
+
+.gap-24 {
+  gap: 24px;
+}

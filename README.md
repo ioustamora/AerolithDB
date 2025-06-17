@@ -9,6 +9,17 @@
 
 **aerolithsDB** is a production-ready distributed NoSQL JSON document database built in Rust, architected for enterprise applications requiring high performance, reliability, and multi-protocol access. Successfully battle-tested across 6-node distributed clusters with 100% operational success rate, aerolithsDB delivers a robust, scalable data platform combining advanced distributed systems concepts with modern database features.
 
+## 📚 Documentation
+
+Comprehensive documentation is available in the [`docs/`](docs/) directory:
+
+- **[Getting Started Guide](docs/GETTING_STARTED.md)** - Quick setup, configuration, and basic usage
+- **[Developer Guide](docs/DEVELOPER_GUIDE.md)** - Architecture, development, and contribution guidelines  
+- **[Production Deployment Guide](docs/PRODUCTION_DEPLOYMENT.md)** - Enterprise deployment and operations
+- **[Documentation Index](docs/README.md)** - Complete documentation overview
+
+**New to AerolithDB?** Start with the [Getting Started Guide](docs/GETTING_STARTED.md) for a 2-minute setup.
+
 ### ✅ Phase 4: Enhanced Protocols (COMPLETED)
 
 - [x] **P2P Networking Framework**: Network manager with connection pooling, discovery protocols, and cluster formation (production ready)
