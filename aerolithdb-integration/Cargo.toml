@@ -1,0 +1,19 @@
+[package]
+name = "aerolithdb-integration"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4"] }
+
+aerolithdb-core = { path = "../aerolithdb-core" }
+aerolithdb-query = { path = "../aerolithdb-query" }
+aerolithdb-security = { path = "../aerolithdb-security" }
+aerolithdb-api = { path = "../aerolithdb-api" }
+aerolithdb-saas = { path = "../aerolithdb-saas" }

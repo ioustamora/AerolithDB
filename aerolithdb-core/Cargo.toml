@@ -23,5 +23,5 @@ aerolithdb-network = { path = "../aerolithdb-network" }
 aerolithdb-cache = { path = "../aerolithdb-cache" }
 aerolithdb-security = { path = "../aerolithdb-security" }
 aerolithdb-query = { path = "../aerolithdb-query" }
-aerolithdb-api = { path = "../aerolithdb-api" }
-aerolithdb-plugins = { path = "../aerolithdb-plugins" }
+# aerolithdb-api = { path = "../aerolithdb-api" } # Removed to break circular dependency - API should depend on core, not vice versa
+# aerolithdb-plugins = { path = "../aerolithdb-plugins" } # Temporarily disabled due to build issues

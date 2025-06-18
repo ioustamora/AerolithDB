@@ -411,6 +411,71 @@ impl aerolithsClient {
         Ok(response)
     }
 
+    /// Performs a GET request with query parameters.
+    ///
+    /// # Arguments
+    /// * `endpoint` - The API endpoint path (without base URL)
+    /// * `query` - Query parameters as key-value pairs
+    ///
+    /// # Returns
+    /// * `Result<serde_json::Value>` - Parsed JSON response or error
+    pub async fn get_with_query(&self, endpoint: &str, query: &[(&str, String)]) -> Result<serde_json::Value> {
+        let url = format!("{}{}", self.base_url, endpoint);
+        debug!("GET request with query: {} {:?}", url, query);
+
+        let response = self.client
+            .get(&url)
+            .query(query)
+            .timeout(self.timeout)
+            .send()
+            .await?;
+
+        debug!("GET response: {} {}", response.status(), url);
+        let json = response.json::<serde_json::Value>().await?;
+        Ok(json)
+    }
+
+    /// Performs a GET request and returns JSON response.
+    ///
+    /// # Arguments
+    /// * `endpoint` - The API endpoint path (without base URL)
+    ///
+    /// # Returns
+    /// * `Result<serde_json::Value>` - Parsed JSON response or error
+    pub async fn get_json(&self, endpoint: &str) -> Result<serde_json::Value> {
+        let response = self.get(endpoint).await?;
+        let json = response.json::<serde_json::Value>().await?;
+        Ok(json)
+    }
+
+    /// Performs a POST request and returns JSON response.
+    ///
+    /// # Arguments
+    /// * `endpoint` - The API endpoint path (without base URL)
+    /// * `body` - The request body to serialize as JSON
+    ///
+    /// # Returns
+    /// * `Result<serde_json::Value>` - Parsed JSON response or error
+    pub async fn post_json<T: Serialize>(&self, endpoint: &str, body: &T) -> Result<serde_json::Value> {
+        let response = self.post(endpoint, body).await?;
+        let json = response.json::<serde_json::Value>().await?;
+        Ok(json)
+    }
+
+    /// Performs a PUT request and returns JSON response.
+    ///
+    /// # Arguments
+    /// * `endpoint` - The API endpoint path (without base URL)
+    /// * `body` - The request body to serialize as JSON
+    ///
+    /// # Returns
+    /// * `Result<serde_json::Value>` - Parsed JSON response or error
+    pub async fn put_json<T: Serialize>(&self, endpoint: &str, body: &T) -> Result<serde_json::Value> {
+        let response = self.put(endpoint, body).await?;
+        let json = response.json::<serde_json::Value>().await?;
+        Ok(json)
+    }
+
     // ================================================================================================
     // DOMAIN-SPECIFIC METHODS
     // ================================================================================================

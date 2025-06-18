@@ -100,7 +100,9 @@ impl RESTAPIv1 {
         let state = AppState {
             query: Arc::clone(&self.query),
             security: Arc::clone(&self.security),
-        };        let mut router = Router::new()
+        };
+        
+        let mut router = Router::new()
             .route("/health", get(health_check))
             .route("/api/v1/collections/:collection/documents", post(create_document))
             .route("/api/v1/collections/:collection/documents/:id", get(get_document))
@@ -109,6 +111,10 @@ impl RESTAPIv1 {
             .route("/api/v1/collections/:collection/query", post(query_documents))
             .route("/api/v1/collections/:collection/documents", get(list_documents))
             .route("/api/v1/stats", get(get_stats))
+            // Payment API routes
+            .nest("/api/v1/payment", crate::payment::payment_routes())
+            // SaaS API routes - requires SaaS manager in state
+            // .nest("/api/v1/saas", crate::saas::saas_routes())
             .with_state(state);
 
         if self.config.cors_enabled {
@@ -120,9 +126,9 @@ impl RESTAPIv1 {
 }
 
 #[derive(Clone)]
-struct AppState {
-    query: Arc<QueryEngine>,
-    security: Arc<SecurityFramework>,
+pub struct AppState {
+    pub query: Arc<QueryEngine>,
+    pub security: Arc<SecurityFramework>,
 }
 
 async fn health_check() -> Json<serde_json::Value> {

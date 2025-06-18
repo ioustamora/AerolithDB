@@ -10,6 +10,7 @@ import NetworkExplorer from '@pages/NetworkExplorer'
 import RealtimeMonitor from '@pages/RealtimeMonitor'
 import Administration from '@pages/Administration'
 import Analytics from '@pages/Analytics'
+import PaymentCenter from '@pages/PaymentCenter'
 import NotFound from '@pages/NotFound'
 
 const { Content } = Layout
@@ -22,7 +23,8 @@ const App: React.FC = () => {
         <Layout>
           <AppSidebar />
           <Layout>
-            <Content className="app-content">              <Routes>
+            <Content className="app-content">
+              <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/data" element={<DataBrowser />} />
                 <Route path="/data/:collection" element={<DataBrowser />} />
@@ -32,6 +34,7 @@ const App: React.FC = () => {
                 <Route path="/realtime" element={<RealtimeMonitor />} />
                 <Route path="/admin" element={<Administration />} />
                 <Route path="/analytics" element={<Analytics />} />
+                <Route path="/payments" element={<PaymentCenter />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Content>

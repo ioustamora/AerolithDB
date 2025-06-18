@@ -77,9 +77,15 @@ mod config;
 mod batch;
 mod args;
 mod utils;
+// mod wallet;  // Temporarily disabled
+mod crypto_wallet;
+mod saas;
+mod tui;
 
 use client::aerolithsClient;
 use commands::*;
+use crypto_wallet::{WalletArgs, handle_wallet_command};
+use saas::{SaaSArgs, handle_saas_command};
 
 /// aerolithsDB CLI - Command line client for aerolithsDB distributed database.
 ///
@@ -128,17 +134,31 @@ struct Cli {
     /// - Internal operation timing
     /// - Network communication traces
     /// - Error stack traces and context
-    /// Useful for troubleshooting connectivity and performance issues.
-    #[arg(short, long)]
+    /// Useful for troubleshooting connectivity and performance issues.    #[arg(short, long)]
     verbose: bool,
+    
+    /// Launch the Terminal User Interface (TUI).
+    /// 
+    /// When enabled, launches an interactive terminal interface instead of
+    /// executing traditional CLI commands. The TUI provides real-time monitoring,
+    /// node management, cluster visualization, test execution, and configuration
+    /// management through an intuitive tabbed interface.
+    /// 
+    /// Examples:
+    /// - aerolithsdb-cli --tui (launch TUI mode)
+    /// - aerolithsdb-cli --no-tui status (force CLI mode)
+    #[arg(long, default_value = "false")]
+    tui: bool,
     
     /// Primary command to execute.
     /// 
     /// The CLI is organized into command groups for different functional areas.
     /// Each command group contains related subcommands with specific options
     /// and arguments appropriate for that domain.
+    /// 
+    /// Note: This is ignored when --tui flag is used.
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 }
 
 /// Primary command categories available in the aerolithsDB CLI.
@@ -270,6 +290,65 @@ enum Commands {
     /// field selection, and compression. Optimized for backup, analysis,
     /// and data integration workflows.
     BatchExport(BatchExportArgs),
+
+    // ================================================================================================
+    // WALLET MANAGEMENT COMMANDS
+    // ================================================================================================
+
+    /// Create a new wallet.
+    ///    // /// Generates a new wallet with a secure keypair and optional metadata.
+    // /// The wallet can be used for transaction signing, authentication,
+    // /// and secure storage of sensitive information.
+    // WalletCreate(WalletCreateArgs),  // Temporarily disabled
+    
+    // /// Import an existing wallet.
+    // /// 
+    // /// Imports a wallet from a file or standard input. Supports various
+    // /// formats including JSON, YAML, and binary. The import process
+    // /// includes key derivation, metadata extraction, and integrity verification.
+    // WalletImport(WalletImportArgs),  // Temporarily disabled
+    
+    // /// Export a wallet to a file or standard output.
+    // /// 
+    // /// Exports the specified wallet including its keys and metadata.
+    // /// Supports encryption and compression options for secure and efficient
+    // /// storage. The export process creates a portable wallet archive.
+    // WalletExport(WalletExportArgs),  // Temporarily disabled
+    
+    // /// List available wallets.
+    // /// 
+    // /// Displays a list of all wallets managed by the CLI including
+    // /// metadata such as creation date, last modified date, and key
+    // /// fingerprint. Supports filtering and formatting options.
+    // WalletList(WalletListArgs),  // Temporarily disabled
+    
+    // /// Get wallet details.
+    // /// 
+    // /// Retrieves detailed information about a specific wallet including
+    // /// its keys, metadata, and usage statistics. Supports output formatting
+    // /// and filtering options.
+    // WalletGet(WalletGetArgs),  // Temporarily disabled
+      
+    // /// Delete a wallet.
+    // /// 
+    // /// Permanently removes a wallet and its associated keys from the
+    // /// system. Includes safety features like confirmation prompts
+    // /// /// and provides clear feedback on the operation success.
+    // WalletDelete(WalletDeleteArgs),  // Temporarily disabled
+    
+    /// Cryptocurrency wallet and payment operations.
+    /// 
+    /// Connect to Tron and Solana wallets, check USDT/USDC balances,
+    /// make payments for services, and manage payment history.
+    /// Supports both testnet and mainnet environments.
+    CryptoWallet(WalletArgs),
+    
+    /// SaaS management operations.
+    /// 
+    /// Manage tenants, billing, quotas, SSO, analytics, and admin functions
+    /// for AerolithDB SaaS/DBaaS deployments. Includes tenant creation,
+    /// billing management, usage tracking, and system administration.
+    Saas(SaaSArgs),
 }
 
 /// Main CLI entry point with comprehensive error handling and logging setup.
@@ -311,18 +390,23 @@ async fn main() -> Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(format!("aerolithsdb_cli={}", level))
         .init();
-    
-    info!("aerolithsDB CLI starting, connecting to: {}", cli.url);
+      info!("aerolithsDB CLI starting, connecting to: {}", cli.url);
     
     // Create HTTP client with configured timeout and connection parameters.
     // The client handles all communication with the aerolithsDB server including
     // authentication, request formatting, and response parsing.
     let client = aerolithsClient::new(cli.url, Some(Duration::from_secs(cli.timeout)))?;
     
+    // Check if TUI mode is requested or if no command is provided (default to TUI)
+    if cli.tui || cli.command.is_none() {
+        info!("Launching Terminal User Interface (TUI)");
+        return tui::launch_tui(client).await;
+    }
+    
     // Route the command to the appropriate handler with comprehensive error handling.
     // Each command handler is responsible for input valiaerolithon, server communication,
     // result formatting, and user feedback.
-    match cli.command {
+    match cli.command.unwrap() {
         Commands::Put(args) => {
             execute_put(&client, &args).await?;
         }
@@ -391,6 +475,34 @@ async fn main() -> Result<()> {
         }
         Commands::BatchExport(args) => {
             batch::execute_batch_export(&client, &args).await?;
+        }        // // Wallet management commands - temporarily disabled
+        // Commands::WalletCreate(args) => {
+        //     wallet::execute_wallet_create(&client, &args).await?;
+        // }
+        // Commands::WalletImport(args) => {
+        //     wallet::execute_wallet_import(&client, &args).await?;
+        // }
+        // Commands::WalletExport(args) => {
+        //     wallet::execute_wallet_export(&client, &args).await?;
+        // }
+        // Commands::WalletList(args) => {
+        //     wallet::execute_wallet_list(&client, &args).await?;
+        // }
+        // Commands::WalletGet(args) => {
+        //     wallet::execute_wallet_get(&client, &args).await?;
+        // }
+        // Commands::WalletDelete(args) => {
+        //     wallet::execute_wallet_delete(&client, &args).await?;
+        // }
+        
+        // Cryptocurrency wallet and payment commands
+        Commands::CryptoWallet(args) => {
+            handle_wallet_command(args, &client).await?;
+        }
+        
+        // SaaS management commands
+        Commands::Saas(args) => {
+            handle_saas_command(&client, args).await?;
         }
     }
       Ok(())

@@ -51,8 +51,8 @@ use aerolithdb_network::NetworkManager;        // P2P networking and cluster com
 use aerolithdb_cache::IntelligentCacheSystem;  // ML-driven intelligent caching layer
 use aerolithdb_security::SecurityFramework;    // Zero-trust security and encryption framework
 use aerolithdb_query::QueryEngine;             // Distributed query processing and optimization
-use aerolithdb_api::APIGateway;               // Multi-protocol API gateway and request routing
-use aerolithdb_plugins::PluginManager;        // Extensible plugin system and runtime management
+// use aerolithdb_api::APIGateway;               // Multi-protocol API gateway and request routing - temporarily disabled
+// use aerolithdb_plugins::PluginManager;        // Extensible plugin system and runtime management - temporarily disabled
 
 // Internal core modules for configuration, node management, and type definitions
 mod config;    // Configuration management with environment and file-based loading
@@ -98,15 +98,14 @@ pub struct AerolithsDB {
     
     /// Zero-trust security framework with end-to-end encryption
     security: Arc<SecurityFramework>,
-    
-    /// Query processing engine with optimization and distributed execution
+      /// Query processing engine with optimization and distributed execution
     query: Arc<QueryEngine>,
     
-    /// API gateway supporting REST, GraphQL, gRPC, and WebSocket protocols
-    api: Arc<APIGateway>,
+    // /// API gateway supporting REST, GraphQL, gRPC, and WebSocket protocols
+    // api: Arc<APIGateway>,  // Temporarily disabled
     
-    /// Plugin manager for system extensibility and custom functionality
-    plugins: Arc<PluginManager>,
+    // Plugin manager for system extensibility and custom functionality - temporarily disabled
+    // plugins: Arc<PluginManager>, // Temporarily disabled
 }
 
 impl AerolithsDB {
@@ -166,19 +165,17 @@ impl AerolithsDB {
             aerolithdb_query::QueryConfig::default(),
             Arc::clone(&storage),
             Arc::clone(&cache),
-            Arc::clone(&security),
-        ).await?);
+            Arc::clone(&security),        ).await?);
         
-        // Initialize API gateway with default configuration
-        let api = Arc::new(APIGateway::new(
-            &aerolithdb_api::APIConfig::default(),
-            Arc::clone(&query),
-            Arc::clone(&security),
-        ).await?);
+        // Initialize API gateway with default configuration - temporarily disabled
+        // let api = Arc::new(APIGateway::new(
+        //     &aerolithdb_api::APIConfig::default(),
+        //     Arc::clone(&query),
+        //     Arc::clone(&security),
+        // ).await?);
 
-        // Initialize plugin manager with default configuration
-        let plugins = Arc::new(PluginManager::new(&aerolithdb_plugins::PluginConfig::default()).await?);
-        debug!("All aerolithsDB components initialized successfully");
+        // Initialize plugin manager with default configuration - temporarily disabled
+        // let plugins = Arc::new(PluginManager::new(&aerolithdb_plugins::PluginConfig::default()).await?);        debug!("All aerolithsDB components initialized successfully");
 
         Ok(Self {
             config,
@@ -189,8 +186,8 @@ impl AerolithsDB {
             cache,
             security,
             query,
-            api,
-            plugins,
+            // api,      // Temporarily disabled
+            // plugins,  // Temporarily disabled
         })
     }    /// Create a new aerolithsDB instance with custom configuration.
     /// 
@@ -244,18 +241,17 @@ impl AerolithsDB {
             aerolithdb_query::QueryConfig::default(),
             Arc::clone(&storage),
             Arc::clone(&cache),
-            Arc::clone(&security),
-        ).await?);
+            Arc::clone(&security),        ).await?);
 
-        // Initialize API gateway with default configuration
-        let api = Arc::new(APIGateway::new(
-            &aerolithdb_api::APIConfig::default(),
-            Arc::clone(&query),
-            Arc::clone(&security),
-        ).await?);
+        // Initialize API gateway with default configuration - temporarily disabled
+        // let api = Arc::new(APIGateway::new(
+        //     &aerolithdb_api::APIConfig::default(),
+        //     Arc::clone(&query),
+        //     Arc::clone(&security),
+        // ).await?);
 
-        // Initialize plugin manager with default configuration
-        let plugins = Arc::new(PluginManager::new(&aerolithdb_plugins::PluginConfig::default()).await?);
+        // Initialize plugin manager with default configuration - temporarily disabled
+        // let plugins = Arc::new(PluginManager::new(&aerolithdb_plugins::PluginConfig::default()).await?);
 
         debug!("All aerolithsDB components initialized successfully with custom config");
 
@@ -268,8 +264,8 @@ impl AerolithsDB {
             cache,
             security,
             query,
-            api,
-            plugins,
+            // api,      // Temporarily disabled
+            // plugins,  // Temporarily disabled
         })
     }    /// Start the aerolithsDB instance and all its subsystems.
     /// 
@@ -300,15 +296,14 @@ impl AerolithsDB {
     pub async fn start(&mut self) -> Result<()> {
         info!("Starting aerolithsDB instance");
 
-        // Start components in dependency order to avoid initialization conflicts
-        self.security.start().await?;     // Security must be first for encryption
+        // Start components in dependency order to avoid initialization conflicts        self.security.start().await?;     // Security must be first for encryption
         self.storage.start().await?;      // Storage needed for persistence
         self.cache.start().await?;        // Cache enhances storage performance
         self.consensus.start().await?;    // Consensus requires storage and security
         self.network.start().await?;      // Network needs consensus for coordination
         self.query.start().await?;        // Query engine needs storage and cache
-        self.api.start().await?;          // API gateway needs query engine
-        self.plugins.start().await?;      // Plugins can extend all other systems
+        // self.api.start().await?;          // API gateway needs query engine - temporarily disabled
+        // self.plugins.start().await?;      // Plugins can extend all other systems - temporarily disabled
 
         info!("aerolithsDB instance started successfully");
         Ok(())
@@ -343,11 +338,9 @@ impl AerolithsDB {
     /// // Database is now safely shut down
     /// ```
     pub async fn stop(&mut self) -> Result<()> {
-        info!("Stopping aerolithsDB instance");
-
-        // Stop components in reverse dependency order for clean shutdown
-        self.plugins.stop().await?;       // Stop plugins that might use other systems
-        self.api.stop().await?;           // Stop API to prevent new requests
+        info!("Stopping aerolithsDB instance");        // Stop components in reverse dependency order for clean shutdown
+        // self.plugins.stop().await?;       // Stop plugins that might use other systems - temporarily disabled
+        // self.api.stop().await?;           // Stop API to prevent new requests - temporarily disabled
         self.query.stop().await?;         // Finish pending queries
         self.network.stop().await?;       // Close network connections cleanly
         self.consensus.stop().await?;     // Complete consensus operations

@@ -1,0 +1,56 @@
+[package]
+name = "aerolithdb-saas"
+version = "0.1.0"
+edition = "2021"
+description = "SaaS/DBaaS multi-tenancy and billing infrastructure for AerolithDB"
+keywords = ["database", "saas", "multi-tenancy", "billing", "usage-tracking"]
+categories = ["database", "web-programming"]
+
+[dependencies]
+# Core AerolithDB dependencies  
+aerolithdb-core = { path = "../aerolithdb-core" }
+aerolithdb-security = { path = "../aerolithdb-security" }
+aerolithdb-storage = { path = "../aerolithdb-storage" }
+
+# Async runtime and utilities
+tokio = { version = "1.40", features = ["full"] }
+async-trait = "0.1"
+
+# Serialization and data handling
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.10", features = ["v4", "serde"] }
+
+# Date and time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# Database and storage
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "json"] }
+
+# HTTP and web framework
+axum = { version = "0.7", features = ["macros"] }
+tower = { version = "0.5", features = ["full"] }
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+
+# Monitoring and observability
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+metrics = "0.23"
+prometheus = "0.13"
+
+# Error handling and utilities
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Configuration management
+config = "0.14"
+
+# Cryptographic operations
+ring = "0.17"
+base64 = "0.22"
+
+# Background task processing
+tokio-cron-scheduler = "0.11"
+
+[dev-dependencies]
+tokio-test = "0.4"

@@ -398,6 +398,12 @@ pub enum PluginType {
     Integration(Box<dyn IntegrationPlugin>),
 }
 
+// Payment plugin system for cryptocurrency payments
+pub mod payment;
+
+// Blockchain integration modules
+pub mod blockchain;
+
 /// Specialized plugin traits
 pub trait StoragePlugin: AerolithsPlugin {
     fn supports_backend(&self, backend_type: &str) -> bool;

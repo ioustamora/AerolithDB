@@ -17,8 +17,9 @@ members = [
     "aerolithdb-security",
     "aerolithdb-query",
     "aerolithdb-api",
-    "aerolithdb-plugins",
-    "aerolithdb-cli"
+    "aerolithdb-plugins",    "aerolithdb-cli",
+    "aerolithdb-saas"
+    # "aerolithdb-integration" # Temporarily disabled due to circular dependency
 ]
 
 [workspace.dependencies]

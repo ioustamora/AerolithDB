@@ -20,4 +20,15 @@ csv = "1.3"
 futures = "0.3"
 flate2 = "1.0"
 
+# TUI dependencies
+ratatui = "0.28"
+crossterm = "0.28"
+tokio-util = "0.7"
+tui-input = "0.10"
+rand = "0.8"
+
+# Additional UI utilities
+tui-logger = "0.13"
+unicode-width = "0.1"
+
 aerolithdb-core = { path = "../aerolithdb-core" }
