@@ -437,11 +437,10 @@ fn render_node_details(f: &mut Frame, node_manager: &super::app::NodeManagerStat
                 .borders(Borders::ALL)
                 .border_style(Style::default().fg(Color::Green)),
         )
-        .style(Style::default().fg(Color::White));
+        .style(Style::default().fg(Color::White));    f.render_widget(actions_widget, chunks[1]);
 
-    f.render_widget(actions_widget, chunks[1]);
-
-    // Status or configuration    let default_status = "Ready for operations".to_string();
+    // Status or configuration
+    let default_status = "Ready for operations".to_string();
     let status_text = node_manager
         .operation_status
         .as_ref()

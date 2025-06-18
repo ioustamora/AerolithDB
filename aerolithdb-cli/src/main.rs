@@ -81,6 +81,7 @@ mod utils;
 mod crypto_wallet;
 mod saas;
 mod tui;
+mod tui_test;
 
 use client::aerolithsClient;
 use commands::*;
@@ -126,15 +127,15 @@ struct Cli {
     /// connection establishment and response time.
     #[arg(short, long, default_value = "30")]
     timeout: u64,
-    
-    /// Enable verbose debug logging.
+      /// Enable verbose debug logging.
     /// 
     /// When enabled, shows detailed debug information including:
     /// - HTTP request/response details
     /// - Internal operation timing
     /// - Network communication traces
     /// - Error stack traces and context
-    /// Useful for troubleshooting connectivity and performance issues.    #[arg(short, long)]
+    /// Useful for troubleshooting connectivity and performance issues.
+    #[arg(short, long)]
     verbose: bool,
     
     /// Launch the Terminal User Interface (TUI).

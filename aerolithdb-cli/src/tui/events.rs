@@ -12,14 +12,15 @@ use crate::client::aerolithsClient;
 use super::app::{App, ConsoleMode, TestExecutionStatus, NodeState};
 
 /// Handle keyboard input events
-pub async fn handle_key_event(app: &mut App, key: KeyEvent, client: Arc<aerolithsClient>) -> Result<()> {
-    match key.code {
+pub async fn handle_key_event(app: &mut App, key: KeyEvent, client: Arc<aerolithsClient>) -> Result<()> {    match key.code {
         // Global navigation
         KeyCode::Char('q') | KeyCode::Char('Q') => {
-            if key.modifiers.contains(KeyModifiers::CONTROL) {
-                app.quit();
-                return Ok(());
-            }
+            app.quit();
+            return Ok(());
+        },
+        KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+            app.quit();
+            return Ok(());
         },
         KeyCode::Tab => {
             app.next_tab();

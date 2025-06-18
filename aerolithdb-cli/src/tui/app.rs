@@ -477,13 +477,43 @@ impl Default for DashboardState {
 
 impl Default for NodeManagerState {
     fn default() -> Self {
-        Self {
-            nodes: Vec::new(),
-            selected_node: None,
-            table_state: TableState::default(),
+        let mut state = Self {
+            nodes: vec![
+                ManagedNode {
+                    id: "node-01".to_string(),
+                    name: "Primary Node".to_string(),
+                    endpoint: "127.0.0.1:8080".to_string(),
+                    status: NodeState::Stopped,
+                    capabilities: vec!["storage".to_string(), "query".to_string(), "consensus".to_string()],
+                    configuration: r#"{"storage_path": "/data/node01", "port": 8080}"#.to_string(),
+                },
+                ManagedNode {
+                    id: "node-02".to_string(),
+                    name: "Secondary Node".to_string(),
+                    endpoint: "127.0.0.1:8081".to_string(),
+                    status: NodeState::Stopped,
+                    capabilities: vec!["storage".to_string(), "query".to_string()],
+                    configuration: r#"{"storage_path": "/data/node02", "port": 8081}"#.to_string(),
+                },
+                ManagedNode {
+                    id: "node-03".to_string(),
+                    name: "Worker Node".to_string(),
+                    endpoint: "127.0.0.1:8082".to_string(),
+                    status: NodeState::Stopped,
+                    capabilities: vec!["query".to_string()],
+                    configuration: r#"{"storage_path": "/data/node03", "port": 8082}"#.to_string(),
+                },
+            ],
+            selected_node: Some(0),
+            table_state: {
+                let mut state = TableState::default();
+                state.select(Some(0));
+                state
+            },
             operation_status: None,
             config_dialog: None,
-        }
+        };
+        state
     }
 }
 

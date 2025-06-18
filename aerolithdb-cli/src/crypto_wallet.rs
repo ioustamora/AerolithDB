@@ -110,14 +110,13 @@ async fn connect_wallet(
     address: &str,
     signature: Option<&str>,
 ) -> Result<()> {
-    println!("🔗 Connecting to {} wallet...", network.to_uppercase());
-      let request_body = serde_json::json!({
+    println!("🔗 Connecting to {} wallet...", network.to_uppercase());    let request_body = serde_json::json!({
         "wallet_address": address,
         "network": network,
         "signature": signature
     });
     
-    let response = client.post("/api/v1/payments/wallets/connect", &request_body).await?;
+    let response = client.post_json("/api/v1/payments/wallets/connect", &request_body).await?;
     
     if let Some(success) = response["success"].as_bool() {
         if success {
@@ -149,17 +148,16 @@ async fn check_balance(
     token: Option<&str>,
 ) -> Result<()> {
     println!("💰 Checking wallet balance...");
-    
-    let mut params = vec![
-        ("wallet_address", address),
-        ("network", network),
+      let mut params = vec![
+        ("wallet_address", address.to_string()),
+        ("network", network.to_string()),
     ];
     
     if let Some(token) = token {
-        params.push(("token", token));
+        params.push(("token", token.to_string()));
     }
     
-    let response = client.get("/api/v1/payments/wallets/balance", Some(params)).await?;
+    let response = client.get_with_query("/api/v1/payments/wallets/balance", &params).await?;
     
     if let Some(balances) = response["balances"].as_array() {
         println!("\n📊 Wallet Balances for {}", address);
@@ -200,7 +198,7 @@ async fn make_payment(
         "description": description
     });
     
-    let response = client.post("/api/v1/payments/transactions/create", Some(request_body)).await?;
+    let response = client.post_json("/api/v1/payments/transactions/create", &request_body).await?;
     
     if let Some(transaction_id) = response["transaction_id"].as_str() {
         println!("✅ Payment transaction created:");
@@ -225,10 +223,9 @@ async fn make_payment(
             let confirm_request = serde_json::json!({
                 "signed_transaction": signed_tx
             });
-            
-            let confirm_response = client.post(
+              let confirm_response = client.post_json(
                 &format!("/api/v1/payments/transactions/{}/confirm", transaction_id),
-                Some(confirm_request),
+                &confirm_request,
             ).await?;
             
             if let Some(success) = confirm_response["success"].as_bool() {
@@ -258,17 +255,16 @@ async fn show_payment_history(
     limit: u32,
 ) -> Result<()> {
     println!("📜 Loading payment history...");
-    
-    let mut params = vec![
-        ("wallet_address", address),
-        ("limit", &limit.to_string()),
+      let mut params = vec![
+        ("wallet_address", address.to_string()),
+        ("limit", limit.to_string()),
     ];
     
     if let Some(network) = network {
-        params.push(("network", network));
+        params.push(("network", network.to_string()));
     }
     
-    let response = client.get("/api/v1/payments/history", Some(params)).await?;
+    let response = client.get_with_query("/api/v1/payments/history", &params).await?;
     
     if let Some(payments) = response["payments"].as_array() {
         if payments.is_empty() {
@@ -318,7 +314,7 @@ async fn show_payment_history(
 async fn disconnect_wallet(client: &aerolithsClient) -> Result<()> {
     println!("🔌 Disconnecting wallet...");
     
-    let response = client.post("/api/v1/payments/wallets/disconnect", Some(serde_json::json!({}))).await?;
+    let response = client.post_json("/api/v1/payments/wallets/disconnect", &serde_json::json!({})).await?;
     
     if let Some(success) = response["success"].as_bool() {
         if success {
