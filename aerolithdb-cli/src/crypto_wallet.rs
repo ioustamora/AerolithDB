@@ -111,14 +111,13 @@ async fn connect_wallet(
     signature: Option<&str>,
 ) -> Result<()> {
     println!("🔗 Connecting to {} wallet...", network.to_uppercase());
-    
-    let request_body = serde_json::json!({
+      let request_body = serde_json::json!({
         "wallet_address": address,
         "network": network,
         "signature": signature
     });
     
-    let response = client.post("/api/v1/payments/wallets/connect", Some(request_body)).await?;
+    let response = client.post("/api/v1/payments/wallets/connect", &request_body).await?;
     
     if let Some(success) = response["success"].as_bool() {
         if success {

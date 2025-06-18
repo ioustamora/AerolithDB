@@ -34,7 +34,7 @@ pub async fn handle_key_event(app: &mut App, key: KeyEvent, client: Arc<aerolith
         KeyCode::Char('h') | KeyCode::F(1) => {
             show_help(app);
         },
-        KeyCode::F5 => {
+        KeyCode::F(5) => {
             refresh_data(app, client.clone()).await?;
         },
         _ => {
@@ -332,10 +332,15 @@ async fn refresh_data(app: &mut App, client: Arc<aerolithsClient>) -> Result<()>
 
 async fn start_selected_node(app: &mut App, client: Arc<aerolithsClient>) -> Result<()> {
     if let Some(selected) = app.node_manager.selected_node {
+        let node_name = app.node_manager.nodes.get(selected)
+            .map(|n| n.name.clone())
+            .unwrap_or_else(|| "Unknown".to_string());
+        
+        app.set_status(format!("Starting node: {}", node_name));
+        
         if let Some(node) = app.node_manager.nodes.get_mut(selected) {
-            app.set_status(format!("Starting node: {}", node.name));
             node.status = NodeState::Starting;
-            app.node_manager.operation_status = Some(format!("Starting node {}", node.name));
+            app.node_manager.operation_status = Some(format!("Starting node {}", node_name));
             
             // In a real implementation, this would call the API to start the node
             // For now, simulate the operation
@@ -352,10 +357,15 @@ async fn start_selected_node(app: &mut App, client: Arc<aerolithsClient>) -> Res
 
 async fn stop_selected_node(app: &mut App, client: Arc<aerolithsClient>) -> Result<()> {
     if let Some(selected) = app.node_manager.selected_node {
+        let node_name = app.node_manager.nodes.get(selected)
+            .map(|n| n.name.clone())
+            .unwrap_or_else(|| "Unknown".to_string());
+        
+        app.set_status(format!("Stopping node: {}", node_name));
+        
         if let Some(node) = app.node_manager.nodes.get_mut(selected) {
-            app.set_status(format!("Stopping node: {}", node.name));
             node.status = NodeState::Stopping;
-            app.node_manager.operation_status = Some(format!("Stopping node {}", node.name));
+            app.node_manager.operation_status = Some(format!("Stopping node {}", node_name));
             
             // In a real implementation, this would call the API to stop the node
         }
@@ -367,10 +377,15 @@ async fn stop_selected_node(app: &mut App, client: Arc<aerolithsClient>) -> Resu
 
 async fn restart_selected_node(app: &mut App, client: Arc<aerolithsClient>) -> Result<()> {
     if let Some(selected) = app.node_manager.selected_node {
+        let node_name = app.node_manager.nodes.get(selected)
+            .map(|n| n.name.clone())
+            .unwrap_or_else(|| "Unknown".to_string());
+        
+        app.set_status(format!("Restarting node: {}", node_name));
+        
         if let Some(node) = app.node_manager.nodes.get_mut(selected) {
-            app.set_status(format!("Restarting node: {}", node.name));
             node.status = NodeState::Stopping;
-            app.node_manager.operation_status = Some(format!("Restarting node {}", node.name));
+            app.node_manager.operation_status = Some(format!("Restarting node {}", node_name));
             
             // In a real implementation, this would call the API to restart the node
         }
@@ -447,18 +462,22 @@ fn show_node_details(app: &mut App) {
 
 async fn run_selected_test_suite(app: &mut App, client: Arc<aerolithsClient>) -> Result<()> {
     if let Some(selected) = app.test_runner.selected_suite {
-        if let Some(suite) = app.test_runner.test_suites.get(selected) {
-            app.test_runner.execution_status = TestExecutionStatus::Running {
-                suite: suite.name.clone(),
-                progress: 0.0,
-            };
-            app.set_status(format!("Running test suite: {}", suite.name));
-            
+        let suite_name = app.test_runner.test_suites.get(selected)
+            .map(|s| s.name.clone())
+            .unwrap_or_else(|| "Unknown Suite".to_string());
+        
+        app.test_runner.execution_status = TestExecutionStatus::Running {
+            suite: suite_name.clone(),
+            progress: 0.0,
+        };
+        app.set_status(format!("Running test suite: {}", suite_name));
+        
+        if app.test_runner.test_suites.get(selected).is_some() {
             // In a real implementation, this would execute the actual test suite
-            let suite_name = suite.name.clone();
+            let _suite_name = suite_name;
             tokio::spawn(async move {
                 // Simulate test execution
-                for i in 1..=10 {
+                for _i in 1..=10 {
                     tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
                     // Update progress
                 }

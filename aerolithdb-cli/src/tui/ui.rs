@@ -441,11 +441,11 @@ fn render_node_details(f: &mut Frame, node_manager: &super::app::NodeManagerStat
 
     f.render_widget(actions_widget, chunks[1]);
 
-    // Status or configuration
+    // Status or configuration    let default_status = "Ready for operations".to_string();
     let status_text = node_manager
         .operation_status
         .as_ref()
-        .unwrap_or(&"Ready for operations".to_string());
+        .unwrap_or(&default_status);
 
     let status_widget = Paragraph::new(status_text.clone())
         .block(
