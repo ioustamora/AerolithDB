@@ -51,7 +51,7 @@ pub mod production_metering;
 // Re-export main types for convenience
 pub use tenant::*;
 pub use usage::*;
-pub use usage_tracker::*;
+pub use usage_tracker::{UsageTracker as UsageTrackerImpl, UsageEvent}; 
 pub use billing::*;
 pub use quotas::*;
 pub use provisioning::*;
@@ -80,9 +80,8 @@ pub struct SaaSManager {
     
     /// Tenant management system
     tenant_manager: Arc<TenantManager>,
-    
-    /// Usage tracking and metering
-    usage_tracker: Arc<UsageTracker>,
+      /// Usage tracking and metering
+    usage_tracker: Arc<UsageTrackerImpl>,
     
     /// Billing calculation engine
     billing_engine: Arc<BillingEngine>,
@@ -108,9 +107,7 @@ impl SaaSManager {
         // Initialize tenant management
         let tenant_manager = Arc::new(TenantManager::new(&config.tenant).await?);
         debug!("✅ Tenant manager initialized");
-        
-        // Initialize usage tracking
-        let usage_tracker = Arc::new(UsageTracker::new(&config.usage).await?);
+          // Initialize usage tracking        let usage_tracker = Arc::new(UsageTrackerImpl::new(config.usage.clone())?);
         debug!("✅ Usage tracker initialized");
         
         // Initialize billing engine
@@ -184,9 +181,8 @@ impl SaaSManager {
     pub fn tenant_manager(&self) -> &Arc<TenantManager> {
         &self.tenant_manager
     }
-    
-    /// Get reference to usage tracker
-    pub fn usage_tracker(&self) -> &Arc<UsageTracker> {
+      /// Get reference to usage tracker
+    pub fn usage_tracker(&self) -> &Arc<UsageTrackerImpl> {
         &self.usage_tracker
     }
     

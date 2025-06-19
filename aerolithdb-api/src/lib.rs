@@ -75,7 +75,7 @@ pub mod grpc_v2;
 pub mod websocket;
 pub mod graphql;
 pub mod payment; // Payment API for cryptocurrency integration
-pub mod saas;    // SaaS API for multi-tenancy and billing
+// pub mod saas;    // SaaS API for multi-tenancy and billing (temporarily disabled)
 pub mod middleware; // SaaS middleware for authentication and tenant routing
 
 // Include Protocol Buffer generated types if available

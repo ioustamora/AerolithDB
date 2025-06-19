@@ -110,8 +110,7 @@ impl RESTAPIv1 {
             .route("/api/v1/collections/:collection/documents/:id", delete(delete_document))
             .route("/api/v1/collections/:collection/query", post(query_documents))
             .route("/api/v1/collections/:collection/documents", get(list_documents))
-            .route("/api/v1/stats", get(get_stats))
-            // Payment API routes
+            .route("/api/v1/stats", get(get_stats))            // Payment API routes
             .nest("/api/v1/payment", crate::payment::payment_routes())
             // SaaS API routes - requires SaaS manager in state
             // .nest("/api/v1/saas", crate::saas::saas_routes())

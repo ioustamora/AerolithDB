@@ -16,7 +16,8 @@ use std::sync::Arc;
 use uuid::Uuid;
 use tracing::{warn, debug, error};
 
-use aerolithdb_saas::{SaaSManager, TenantManager};
+// TODO: Re-enable when aerolithdb-saas dependency is restored
+// use aerolithdb_saas::{SaaSManager, TenantManager};
 use aerolithdb_security::SecurityFramework;
 
 /// SaaS middleware context extracted from requests
@@ -30,13 +31,18 @@ pub struct SaaSContext {
 }
 
 /// Middleware state for SaaS operations
+// TODO: Restore when SaaS dependency is available
+/*
 #[derive(Clone)]
 pub struct SaaSMiddlewareState {
     pub saas_manager: Arc<SaaSManager>,
     pub security: Arc<SecurityFramework>,
 }
+*/
 
 /// Extract tenant context from request headers and authentication
+// TODO: Restore when SaaS dependency is available
+/*
 pub async fn extract_tenant_context(
     State(state): State<SaaSMiddlewareState>,
     headers: HeaderMap,
@@ -100,30 +106,28 @@ pub async fn extract_tenant_context(
     if let Some(auth_header) = headers.get("Authorization") {
         if let Ok(auth_str) = auth_header.to_str() {
             if auth_str.starts_with("Bearer ") {
-                let token = &auth_str[7..];
-                // Validate token with security framework
-                match state.security.validate_token(token).await {
-                    Ok(user_info) => {
-                        context.authenticated = true;
-                        context.user_id = Some(user_info.user_id);
-                        debug!("Authenticated user: {}", user_info.user_id);
-                    },
-                    Err(e) => {
-                        warn!("Token validation failed: {}", e);
-                        return Err(StatusCode::UNAUTHORIZED);
-                    },
+                let token = &auth_str[7..];                // TODO: Implement token validation with security framework
+                // For now, we'll do basic validation
+                if !token.is_empty() {
+                    context.authenticated = true;
+                    context.user_id = Some("authenticated_user".to_string());
+                    debug!("Authenticated user with token");
+                } else {
+                    warn!("Empty token provided");
+                    return Err(StatusCode::UNAUTHORIZED);
                 }
             }
         }
     }
 
     // Add context to request extensions
-    request.extensions_mut().insert(context);
-
-    Ok(next.run(request).await)
+    request.extensions_mut().insert(context);    Ok(next.run(request).await)
 }
+*/
 
 /// Validate tenant access and enforce quotas
+// TODO: Restore when SaaS dependency is available
+/*
 pub async fn enforce_tenant_quotas(
     State(state): State<SaaSMiddlewareState>,
     mut request: Request,
@@ -184,12 +188,13 @@ pub async fn enforce_tenant_quotas(
     } else if requires_tenant_context(path) {
         warn!("Request to {} requires tenant context but none provided", path);
         return Err(StatusCode::BAD_REQUEST);
-    }
-
-    Ok(next.run(request).await)
+    }    Ok(next.run(request).await)
 }
+*/
 
 /// Track usage metrics for billing and analytics
+// TODO: Restore when SaaS dependency is available
+/*
 pub async fn track_usage_metrics(
     State(state): State<SaaSMiddlewareState>,
     request: Request,
@@ -331,10 +336,10 @@ fn estimate_resource_delta(request: &Request) -> u64 {
         // Query operations don't directly consume storage
         0
     } else {
-        // Default API call estimate
-        1
+        // Default API call estimate        1
     }
 }
+*/
 
 /// Helper struct for user information from security framework
 pub struct UserInfo {
@@ -343,14 +348,4 @@ pub struct UserInfo {
     pub tenant_id: Option<Uuid>,
 }
 
-/// Mock implementation for SecurityFramework token validation
-impl SecurityFramework {
-    pub async fn validate_token(&self, _token: &str) -> Result<UserInfo, String> {
-        // Mock implementation - in reality this would validate JWT tokens
-        Ok(UserInfo {
-            user_id: "user123".to_string(),
-            roles: vec!["user".to_string()],
-            tenant_id: None,
-        })
-    }
-}
+// TODO: Implement proper token validation in SecurityFramework

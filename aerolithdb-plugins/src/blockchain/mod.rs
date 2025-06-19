@@ -107,7 +107,7 @@ pub struct TransactionStatus {
 }
 
 /// Transaction status enum
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum TxStatus {
     Pending,
     Confirmed,

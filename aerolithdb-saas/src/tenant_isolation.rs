@@ -144,15 +144,15 @@ impl TenantIsolationManager {
     pub async fn register_tenant(&self, tenant: Tenant, isolation_mode: Option<IsolationMode>) -> Result<TenantContext> {
         let isolation_mode = isolation_mode.unwrap_or_else(|| self.default_isolation_mode.clone());
         
-        info!("🏢 Registering tenant {} with isolation mode {:?}", tenant.id, isolation_mode);
+        info!("🏢 Registering tenant {} with isolation mode {:?}", tenant.tenant_id, isolation_mode);
         
         let context = self.create_tenant_context(tenant, isolation_mode).await?;
         
         // Store the context
         let mut contexts = self.contexts.write().await;
-        contexts.insert(context.tenant.id, context.clone());
+        contexts.insert(context.tenant.tenant_id, context.clone());
         
-        info!("✅ Tenant {} registered successfully", context.tenant.id);
+        info!("✅ Tenant {} registered successfully", context.tenant.tenant_id);
         Ok(context)
     }
     
@@ -199,11 +199,10 @@ impl TenantIsolationManager {
         tenant_id: Uuid,
         operation: &TenantOperation,
     ) -> Result<bool> {
-        let contexts = self.contexts.read().await;
-        if let Some(context) = contexts.get(&tenant_id) {
+        let contexts = self.contexts.read().await;        if let Some(context) = contexts.get(&tenant_id) {
             self.validate_operation(context, operation)
         } else {
-            Err(TenantError::NotFound(tenant_id).into())
+            Err(TenantError::NotFound { tenant_id: tenant_id.to_string() }.into())
         }
     }
     
@@ -224,9 +223,8 @@ impl TenantIsolationManager {
                     }
                 },
                 _ => Ok(collection_name.to_string()),
-            }
-        } else {
-            Err(TenantError::NotFound(tenant_id).into())
+            }        } else {
+            Err(TenantError::NotFound { tenant_id: tenant_id.to_string() }.into())
         }
     }
     
@@ -234,9 +232,8 @@ impl TenantIsolationManager {
     pub async fn get_database_identifier(&self, tenant_id: Uuid) -> Result<String> {
         let contexts = self.contexts.read().await;
         if let Some(context) = contexts.get(&tenant_id) {
-            Ok(context.database_identifier.clone())
-        } else {
-            Err(TenantError::NotFound(tenant_id).into())
+            Ok(context.database_identifier.clone())        } else {
+            Err(TenantError::NotFound { tenant_id: tenant_id.to_string() }.into())
         }
     }
     
@@ -247,14 +244,13 @@ impl TenantIsolationManager {
         isolation_mode: IsolationMode,
     ) -> Result<TenantContext> {
         let database_identifier = match isolation_mode {
-            IsolationMode::SharedWithPrefix => "shared_db".to_string(),
-            IsolationMode::SeparateSchema => format!("schema_{}", tenant.id),
-            IsolationMode::SeparateDatabase => format!("db_{}", tenant.id),
-            IsolationMode::SeparateCluster => format!("cluster_{}", tenant.id),
+            IsolationMode::SharedWithPrefix => "shared_db".to_string(),            IsolationMode::SeparateSchema => format!("schema_{}", tenant.tenant_id),
+            IsolationMode::SeparateDatabase => format!("db_{}", tenant.tenant_id),
+            IsolationMode::SeparateCluster => format!("cluster_{}", tenant.tenant_id),
         };
         
         let collection_prefix = match isolation_mode {
-            IsolationMode::SharedWithPrefix => Some(format!("t_{}", tenant.id.to_string().replace('-', ""))),
+            IsolationMode::SharedWithPrefix => Some(format!("t_{}", tenant.tenant_id.to_string().replace('-', ""))),
             _ => None,
         };
         
@@ -317,34 +313,29 @@ impl TenantIsolationManager {
         let usage = &context.current_usage;
         let limits = &context.resource_limits;
         
-        if usage.storage_bytes > limits.max_storage_bytes {
-            return Err(TenantError::ResourceLimitExceeded(
-                "Storage limit exceeded".to_string()
-            ).into());
+        if usage.storage_bytes > limits.max_storage_bytes {            return Err(TenantError::ResourceLimitExceeded { 
+                resource: "Storage limit exceeded".to_string() 
+            }.into());
         }
         
-        if usage.api_calls_current_hour > limits.max_api_calls_per_hour {
-            return Err(TenantError::ResourceLimitExceeded(
-                "API call limit exceeded".to_string()
-            ).into());
+        if usage.api_calls_current_hour > limits.max_api_calls_per_hour {            return Err(TenantError::ResourceLimitExceeded { 
+                resource: "API call limit exceeded".to_string() 
+            }.into());
         }
         
-        if usage.active_connections > limits.max_concurrent_connections {
-            return Err(TenantError::ResourceLimitExceeded(
-                "Connection limit exceeded".to_string()
-            ).into());
+        if usage.active_connections > limits.max_concurrent_connections {            return Err(TenantError::ResourceLimitExceeded { 
+                resource: "Connection limit exceeded".to_string() 
+            }.into());
         }
         
-        if usage.total_documents > limits.max_documents_per_collection * limits.max_collections as u64 {
-            return Err(TenantError::ResourceLimitExceeded(
-                "Document limit exceeded".to_string()
-            ).into());
+        if usage.total_documents > limits.max_documents_per_collection * limits.max_collections as u64 {            return Err(TenantError::ResourceLimitExceeded { 
+                resource: "Document limit exceeded".to_string() 
+            }.into());
         }
         
-        if usage.collection_count > limits.max_collections {
-            return Err(TenantError::ResourceLimitExceeded(
-                "Collection limit exceeded".to_string()
-            ).into());
+        if usage.collection_count > limits.max_collections {            return Err(TenantError::ResourceLimitExceeded { 
+                resource: "Collection limit exceeded".to_string() 
+            }.into());
         }
         
         Ok(())
@@ -385,25 +376,25 @@ impl TenantIsolationManager {
         match context.isolation_mode {
             IsolationMode::SharedWithPrefix => {
                 // Clean up prefixed collections
-                info!("🧹 Cleaning up prefixed collections for tenant {}", context.tenant.id);
+                info!("🧹 Cleaning up prefixed collections for tenant {}", context.tenant.tenant_id);
                 // Implementation would delete all collections with the tenant prefix
             },
             
             IsolationMode::SeparateSchema => {
                 // Drop schema
-                info!("🧹 Dropping schema for tenant {}", context.tenant.id);
+                info!("🧹 Dropping schema for tenant {}", context.tenant.tenant_id);
                 // Implementation would drop the entire schema
             },
             
             IsolationMode::SeparateDatabase => {
                 // Drop database
-                info!("🧹 Dropping database for tenant {}", context.tenant.id);
+                info!("🧹 Dropping database for tenant {}", context.tenant.tenant_id);
                 // Implementation would drop the entire database
             },
             
             IsolationMode::SeparateCluster => {
                 // Cleanup cluster
-                info!("🧹 Cleaning up cluster for tenant {}", context.tenant.id);
+                info!("🧹 Cleaning up cluster for tenant {}", context.tenant.tenant_id);
                 // Implementation would cleanup/destroy the dedicated cluster
             },
         }

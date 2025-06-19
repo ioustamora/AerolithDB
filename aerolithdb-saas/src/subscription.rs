@@ -11,7 +11,7 @@ use tokio::sync::RwLock;
 use std::sync::Arc;
 use uuid::Uuid;
 
-use crate::tenant::TenantId;
+
 use crate::billing::{BillingEngine, Invoice, PaymentMethod};
 use crate::errors::SaaSError;
 
@@ -73,7 +73,7 @@ pub struct PlanLimits {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Subscription {
     pub id: Uuid,
-    pub tenant_id: TenantId,
+    pub tenant_id: Uuid,
     pub plan_id: String,
     pub status: SubscriptionStatus,
     pub billing_interval: BillingInterval,
@@ -114,7 +114,7 @@ pub struct SubscriptionModification {
 }
 
 /// Proration behavior for subscription changes
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum ProrationBehavior {
     CreateProrations,
     None,
@@ -232,7 +232,7 @@ impl SubscriptionManager {
     /// Create a new subscription
     pub async fn create_subscription(
         &self,
-        tenant_id: TenantId,
+        tenant_id: Uuid,
         plan_id: &str,
         billing_interval: BillingInterval,
         payment_method_id: Option<String>,
@@ -296,7 +296,7 @@ impl SubscriptionManager {
     }
 
     /// Get subscription by tenant ID
-    pub async fn get_subscription_by_tenant(&self, tenant_id: TenantId) -> Option<Subscription> {
+    pub async fn get_subscription_by_tenant(&self, tenant_id: Uuid) -> Option<Subscription> {
         let subscriptions = self.subscriptions.read().await;
         subscriptions.values()
             .find(|sub| sub.tenant_id == tenant_id)

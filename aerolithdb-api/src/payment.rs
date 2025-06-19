@@ -105,11 +105,9 @@ pub async fn initialize_payment_manager() -> Result<(), Box<dyn std::error::Erro
         },
     };
     
-    let mut manager = PaymentManager::new(config);
-    
-    // Register blockchain providers
-    manager.register_plugin("tron".to_string(), Box::new(TronProvider::new())).await?;
-    manager.register_plugin("solana".to_string(), Box::new(SolanaProvider::new())).await?;
+    let mut manager = PaymentManager::new(config);    // Register blockchain providers
+    manager.register_provider("tron".to_string(), PaymentProvider::Tron(TronProvider::new()))?;
+    manager.register_provider("solana".to_string(), PaymentProvider::Solana(SolanaProvider::new()))?;
     
     *PAYMENT_MANAGER.write().await = Some(manager);
     
@@ -270,14 +268,13 @@ pub struct ServiceActivation {
 
 /// Connect a cryptocurrency wallet
 pub async fn connect_wallet(
-    State(_app_state): State<Arc<AppState>>,
+    State(_app_state): State<AppState>,
     Json(request): Json<ConnectWalletRequest>,
-) -> Result<Json<ConnectWalletResponse>, StatusCode> {
-    // Validate wallet address format
+) -> Result<Json<ConnectWalletResponse>, StatusCode> {// Validate wallet address format
     let manager_guard = PAYMENT_MANAGER.read().await;
     let manager = manager_guard.as_ref().ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;
     
-    let plugin = manager.get_plugin(&request.network)
+    let plugin = manager.get_provider(&request.network)
         .ok_or(StatusCode::BAD_REQUEST)?;
     
     let is_valid = plugin.metadata().supported_networks.contains(&request.network);
@@ -304,13 +301,12 @@ pub async fn connect_wallet(
 
 /// Get wallet balance for supported tokens
 pub async fn get_wallet_balance(
-    State(_app_state): State<Arc<AppState>>,
+    State(_app_state): State<AppState>,
     Query(query): Query<BalanceQuery>,
-) -> Result<Json<BalanceResponse>, StatusCode> {
-    let manager_guard = PAYMENT_MANAGER.read().await;
+) -> Result<Json<BalanceResponse>, StatusCode> {let manager_guard = PAYMENT_MANAGER.read().await;
     let manager = manager_guard.as_ref().ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;
     
-    let plugin = manager.get_plugin(&query.network)
+    let plugin = manager.get_provider(&query.network)
         .ok_or(StatusCode::BAD_REQUEST)?;
     
     let mut balances = Vec::new();
@@ -351,7 +347,7 @@ pub async fn get_wallet_balance(
 
 /// Disconnect wallet
 pub async fn disconnect_wallet(
-    State(_app_state): State<Arc<AppState>>,
+    State(_app_state): State<AppState>,
     Json(_request): Json<serde_json::Value>,
 ) -> Result<Json<serde_json::Value>, StatusCode> {
     // In a real implementation, you would clean up connection state
@@ -363,13 +359,12 @@ pub async fn disconnect_wallet(
 
 /// Create a payment transaction
 pub async fn create_payment_transaction(
-    State(_app_state): State<Arc<AppState>>,
+    State(_app_state): State<AppState>,
     Json(request): Json<CreatePaymentRequest>,
 ) -> Result<Json<CreatePaymentResponse>, StatusCode> {
-    let manager_guard = PAYMENT_MANAGER.read().await;
-    let manager = manager_guard.as_ref().ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;
+    let manager_guard = PAYMENT_MANAGER.read().await;    let manager = manager_guard.as_ref().ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;
     
-    let plugin = manager.get_plugin(&request.network)
+    let plugin = manager.get_provider(&request.network)
         .ok_or(StatusCode::BAD_REQUEST)?;
     
     // Parse amount (assume it's in the token's smallest unit)
@@ -405,16 +400,15 @@ pub async fn create_payment_transaction(
 
 /// Get transaction status
 pub async fn get_transaction_status(
-    State(_app_state): State<Arc<AppState>>,
+    State(_app_state): State<AppState>,
     Path(transaction_id): Path<String>,
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<Json<TransactionStatusResponse>, StatusCode> {
     let network = query.get("network").ok_or(StatusCode::BAD_REQUEST)?;
     
     let manager_guard = PAYMENT_MANAGER.read().await;
-    let manager = manager_guard.as_ref().ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;
-    
-    let plugin = manager.get_plugin(network)
+    let manager = manager_guard.as_ref().ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;    
+    let plugin = manager.get_provider(network)
         .ok_or(StatusCode::BAD_REQUEST)?;
     
     match plugin.get_payment_status(&transaction_id).await {
@@ -435,7 +429,7 @@ pub async fn get_transaction_status(
 
 /// Confirm payment transaction
 pub async fn confirm_payment_transaction(
-    State(_app_state): State<Arc<AppState>>,
+    State(_app_state): State<AppState>,
     Path(transaction_id): Path<String>,
     Json(request): Json<ConfirmPaymentRequest>,
 ) -> Result<Json<ConfirmPaymentResponse>, StatusCode> {
@@ -453,7 +447,7 @@ pub async fn confirm_payment_transaction(
 
 /// Get payment history
 pub async fn get_payment_history(
-    State(_app_state): State<Arc<AppState>>,
+    State(_app_state): State<AppState>,
     Query(query): Query<HistoryQuery>,
 ) -> Result<Json<PaymentHistoryResponse>, StatusCode> {
     // Mock payment history for demonstration
@@ -478,13 +472,13 @@ pub async fn get_payment_history(
 
 /// Get pricing tiers
 pub async fn get_pricing_tiers(
-    State(_app_state): State<Arc<AppState>>,
+    State(_app_state): State<AppState>,
 ) -> Result<Json<Vec<ServiceTier>>, StatusCode> {
     // Mock pricing data
-    let tiers = vec![
-        ServiceTier {
+    let tiers = vec![        ServiceTier {
             name: "Starter".to_string(),
             id: "starter".to_string(),
+            description: "Basic plan for small projects and personal use".to_string(),
             price_usdt: "10".to_string(),
             price_usdc: "10".to_string(),
             features: ServiceFeatures {
@@ -509,7 +503,7 @@ pub async fn get_pricing_tiers(
 
 /// Purchase a service
 pub async fn purchase_service(
-    State(_app_state): State<Arc<AppState>>,
+    State(_app_state): State<AppState>,
     Json(request): Json<ServicePurchaseRequest>,
 ) -> Result<Json<ServicePurchaseResponse>, StatusCode> {
     // Calculate payment amount

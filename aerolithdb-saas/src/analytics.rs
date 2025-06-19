@@ -2,7 +2,7 @@
 
 use crate::config::AnalyticsConfig;
 use crate::errors::{SaaSError, SaaSResult};
-use crate::usage::{UsageMetric, UsageRecord};
+use crate::usage::{UsageMetrics as UsageMetric, UsageStatistics as UsageRecord};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -123,6 +123,9 @@ pub struct AnalyticsEngine {
     processing_active: Arc<tokio::sync::RwLock<bool>>,
 }
 
+/// Type alias for backward compatibility
+pub type AnalyticsManager = AnalyticsEngine;
+
 impl AnalyticsEngine {
     /// Create a new analytics engine
     pub async fn new(config: &AnalyticsConfig) -> Result<Self> {
@@ -153,7 +156,7 @@ impl AnalyticsEngine {
         let processing_active = self.processing_active.clone();
         let insights = self.insights.clone();
         let metrics_store = self.metrics_store.clone();
-        let processing_interval = self.config.processing_interval_minutes;
+        let processing_interval = self.config.processing_interval;
         
         tokio::spawn(async move {
             while *processing_active.read().await {
@@ -190,7 +193,7 @@ impl AnalyticsEngine {
         
         // Keep only recent data points to manage memory
         if let Some(points) = store.get_mut(&metric_name) {
-            let cutoff = chrono::Utc::now() - chrono::Duration::days(self.config.retention_days as i64);
+            let cutoff = chrono::Utc::now() - self.config.retention_period;
             points.retain(|p| p.timestamp > cutoff);
         }
         
@@ -319,8 +322,7 @@ impl AnalyticsEngine {
             };
             
             if let Ok(latency_data) = self.query(latency_query).await {
-                if !latency_data.is_empty() {
-                    let values: Vec<f64> = latency_data.iter().map(|p| p.value).collect();
+                if !latency_data.is_empty() {                    let mut values: Vec<f64> = latency_data.iter().map(|p| p.value).collect();
                     values.sort_by(|a, b| a.partial_cmp(b).unwrap());
                     
                     let benchmark = PerformanceBenchmark {
@@ -384,7 +386,7 @@ impl AnalyticsEngine {
                         ],
                         data: {
                             let mut data = HashMap::new();
-                            data.insert("avg_latency".to_string(), serde_json::Value::Number(avg_latency.into()));
+                            data.insert("avg_latency".to_string(), serde_json::Value::from(avg_latency));
                             data
                         },
                         created_at: chrono::Utc::now(),

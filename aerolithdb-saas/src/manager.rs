@@ -10,17 +10,18 @@ use tracing::{info, debug, warn, error};
 use tokio::sync::RwLock;
 use std::collections::HashMap;
 
-use crate::tenant::*;
-use crate::usage_tracker::*;
-use crate::billing::*;
-use crate::quotas::*;
-use crate::provisioning::*;
-use crate::sso::*;
-use crate::analytics::*;
-use crate::config::*;
-use crate::auth::*;
-use crate::tenant_isolation::*;
-use crate::errors::*;
+use crate::tenant::{TenantManager, CreateTenantRequest, Tenant};
+use crate::usage_tracker::{UsageTracker as UsageTrackerImpl, UsageTrackerFactory};
+use crate::billing::{BillingEngine as BillingManager, Invoice, PaymentResult, BillingCycle};
+use crate::quotas::{QuotaManager};
+use crate::config::QuotaEnforcementAction;
+use crate::provisioning::{AdvancedProvisioningEngine as ProvisioningManager};
+use crate::sso::{SSOManager, SSOAuthResponse};
+use crate::analytics::{AnalyticsEngine as AnalyticsManager, TenantUsageSummary};
+use crate::config::{SaaSConfig, TenantLimits, TenantConfig, UsageConfig, BillingConfig, QuotaConfig, ProvisioningConfig, SSOConfig, AnalyticsConfig, IsolationLevel};
+use crate::auth::{SaaSAuthManager};
+use crate::tenant_isolation::{TenantIsolationManager, IsolationMode};
+use crate::errors::{SaaSError, SaaSResult};
 
 /// Main SaaS manager that coordinates all SaaS features
 pub struct SaaSManager {
@@ -31,7 +32,7 @@ pub struct SaaSManager {
     tenant_manager: Arc<TenantManager>,
     
     /// Usage tracking
-    usage_tracker: Arc<UsageTracker>,
+    usage_tracker: Arc<UsageTrackerImpl>,
     
     /// Billing management
     billing_manager: Arc<BillingManager>,
@@ -240,7 +241,7 @@ impl SaaSManager {
     }
     
     /// Get usage tracker
-    pub fn usage_tracker(&self) -> &Arc<UsageTracker> {
+    pub fn usage_tracker(&self) -> &Arc<UsageTrackerImpl> {
         &self.usage_tracker
     }
     

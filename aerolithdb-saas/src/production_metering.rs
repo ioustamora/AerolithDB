@@ -14,14 +14,14 @@ use uuid::Uuid;
 use dashmap::DashMap;
 use std::sync::atomic::{AtomicU64, AtomicBool, Ordering};
 
-use crate::tenant::TenantId;
+
 use crate::subscription::{Subscription, SubscriptionManager};
 use crate::errors::SaaSError;
 
 /// High-performance usage event for real-time processing
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UsageEvent {
-    pub tenant_id: TenantId,
+    pub tenant_id: Uuid,
     pub subscription_id: Option<Uuid>,
     pub event_type: UsageEventType,
     pub resource: String,
@@ -185,7 +185,7 @@ pub struct UsageSnapshot {
 /// Production-scale usage metering engine
 pub struct ProductionUsageMeter {
     // Real-time aggregations by tenant
-    tenant_usage: Arc<DashMap<TenantId, UsageAggregation>>,
+    tenant_usage: Arc<DashMap<Uuid, UsageAggregation>>,
     
     // High-throughput event processing
     event_sender: mpsc::UnboundedSender<UsageEvent>,
@@ -270,13 +270,13 @@ impl ProductionUsageMeter {
     }
 
     /// Get current usage for a tenant
-    pub async fn get_current_usage(&self, tenant_id: TenantId) -> Option<UsageSnapshot> {
+    pub async fn get_current_usage(&self, tenant_id: Uuid) -> Option<UsageSnapshot> {
         self.tenant_usage.get(&tenant_id)
             .map(|usage| usage.get_snapshot())
     }
 
     /// Get usage for multiple tenants
-    pub async fn get_bulk_usage(&self, tenant_ids: &[TenantId]) -> HashMap<TenantId, UsageSnapshot> {
+    pub async fn get_bulk_usage(&self, tenant_ids: &[Uuid]) -> HashMap<Uuid, UsageSnapshot> {
         let mut results = HashMap::new();
         
         for tenant_id in tenant_ids {
@@ -291,7 +291,7 @@ impl ProductionUsageMeter {
     /// Get historical usage data
     pub async fn get_historical_usage(
         &self,
-        tenant_id: TenantId,
+        tenant_id: Uuid,
         start_date: DateTime<Utc>,
         end_date: DateTime<Utc>,
     ) -> Result<Vec<HistoricalUsage>> {
@@ -301,7 +301,7 @@ impl ProductionUsageMeter {
     /// Get usage trends and analytics
     pub async fn get_usage_analytics(
         &self,
-        tenant_id: TenantId,
+        tenant_id: Uuid,
         timeframe: AnalyticsTimeframe,
     ) -> Result<UsageAnalytics> {
         let end_date = Utc::now();
@@ -321,7 +321,7 @@ impl ProductionUsageMeter {
     }
 
     /// Check if tenant is within usage limits
-    pub async fn check_usage_limits(&self, tenant_id: TenantId) -> Result<UsageLimitStatus> {
+    pub async fn check_usage_limits(&self, tenant_id: Uuid) -> Result<UsageLimitStatus> {
         let subscription = self.subscription_manager
             .get_subscription_by_tenant(tenant_id)
             .await
@@ -497,11 +497,10 @@ impl Default for UsageSnapshot {
 /// Storage trait for persistent usage data
 #[async_trait::async_trait]
 pub trait UsageStorage {
-    async fn store_events(&self, events: &[UsageEvent]) -> Result<()>;
-    async fn store_aggregation(&self, tenant_id: TenantId, snapshot: &UsageSnapshot) -> Result<()>;
+    async fn store_events(&self, events: &[UsageEvent]) -> Result<()>;    async fn store_aggregation(&self, tenant_id: Uuid, snapshot: &UsageSnapshot) -> Result<()>;
     async fn get_usage_history(
         &self,
-        tenant_id: TenantId,
+        tenant_id: Uuid,
         start_date: DateTime<Utc>,
         end_date: DateTime<Utc>,
     ) -> Result<Vec<HistoricalUsage>>;
@@ -510,7 +509,7 @@ pub trait UsageStorage {
 /// Historical usage data point
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HistoricalUsage {
-    pub tenant_id: TenantId,
+    pub tenant_id: Uuid,
     pub timestamp: DateTime<Utc>,
     pub period_type: PeriodType,
     pub usage_data: UsageSnapshot,

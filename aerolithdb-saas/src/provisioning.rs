@@ -122,6 +122,10 @@ pub struct AdvancedProvisioningEngine {
     monitoring_enabled: AtomicBool,
 }
 
+/// Type aliases for backward compatibility
+pub type ProvisioningEngine = AdvancedProvisioningEngine;
+pub type ProvisioningManager = AdvancedProvisioningEngine;
+
 impl AdvancedProvisioningEngine {
     pub async fn new(config: &ProvisioningConfig) -> Result<Self> {
         info!("🚀 Initializing advanced provisioning engine with auto-scaling");

@@ -9,6 +9,7 @@ use crate::usage::{UsageStatistics, UsageTracker};
 use crate::tenant::{Tenant, TenantManager};
 use anyhow::Result;
 use chrono::{DateTime, Utc, Duration};
+use rust_decimal::prelude::*;
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Row};
 use std::collections::HashMap;
@@ -286,6 +287,9 @@ pub struct BillingEngine {
     tenant_manager: Arc<TenantManager>,
     is_running: Arc<tokio::sync::RwLock<bool>>,
 }
+
+/// Type alias for backward compatibility
+pub type BillingManager = BillingEngine;
 
 impl BillingEngine {
     /// Create a new billing engine
@@ -849,7 +853,7 @@ impl BillingEngine {
         let mut payments = Vec::new();
         for row in rows {
             let payment = PaymentResult {
-                payment_id: row.try_get("id")?.to_string(),
+                payment_id: row.try_get::<String, _>("id")?,
                 status: serde_json::from_value(row.try_get("status")?)?,
                 amount: (row.try_get::<rust_decimal::Decimal, _>("amount")?.to_f64().unwrap_or(0.0) * 100.0) as u64,
                 currency: row.try_get("currency")?,
@@ -913,7 +917,7 @@ impl BillingEnforcementEngine {
 
     /// Start the enforcement background task
     pub async fn start_enforcement_task(&self) -> Result<()> {
-        let mut interval = interval(tokio::time::Duration::from_hours(1));
+        let mut interval = interval(tokio::time::Duration::from_secs(3600)); // 1 hour
         let enforcement = Arc::new(self.clone());
 
         tokio::spawn(async move {
@@ -995,7 +999,7 @@ impl BillingEnforcementEngine {
                 let payment_id = payment.payment_id.clone();
                 
                 async move {
-                    tokio::time::sleep(tokio::time::Duration::from_hours(delay_hours)).await;
+                    tokio::time::sleep(tokio::time::Duration::from_secs(delay_hours * 3600)).await;
                     
                     if let Err(e) = billing_engine.retry_failed_payment(&payment_id).await {
                         error!("Failed to retry payment {}: {}", payment_id, e);

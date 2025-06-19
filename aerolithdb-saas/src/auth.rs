@@ -235,10 +235,10 @@ impl SaaSAuthManager {
         
         // Verify tenant exists and is active
         let tenant = self.tenant_manager.get_tenant(tenant_id).await?
-            .ok_or_else(|| TenantError::NotFound(tenant_id))?;
+            .ok_or_else(|| TenantError::NotFound { tenant_id: tenant_id.to_string() })?;
         
         if !matches!(tenant.status, TenantStatus::Active) {
-            return Err(TenantError::Inactive(tenant_id).into());
+            return Err(TenantError::Inactive { tenant_id: tenant_id.to_string() }.into());
         }
         
         // In a real implementation, verify password against user store
@@ -283,12 +283,12 @@ impl SaaSAuthManager {
         
         // Verify session is still active
         if !session.is_active || session.expires_at < Utc::now() {
-            return Err(SaaSError::Internal(anyhow::anyhow!("Session expired")));
+            return Err(SaaSError::Internal(anyhow::anyhow!("Session expired")).into());
         }
         
         // Get tenant information
         let tenant = self.tenant_manager.get_tenant(claims.tenant_id).await?
-            .ok_or_else(|| TenantError::NotFound(claims.tenant_id))?;
+            .ok_or_else(|| TenantError::NotFound { tenant_id: claims.tenant_id.to_string() })?;
         
         // Update last accessed time
         drop(sessions);

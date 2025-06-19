@@ -41,6 +41,38 @@ pub enum SaaSError {
     #[error("Configuration error: {0}")]
     Config(String),
     
+    /// Invalid configuration errors
+    #[error("Invalid configuration: {message}")]
+    InvalidConfig { message: String },
+    
+    /// Invalid operation errors
+    #[error("Invalid operation: {message}")]
+    InvalidOperation { message: String },
+    
+    /// Plan not found
+    #[error("Plan not found: {0}")]
+    PlanNotFound(String),
+    
+    /// Subscription not found
+    #[error("Subscription not found: {0}")]
+    SubscriptionNotFound(uuid::Uuid),
+    
+    /// Usage not found
+    #[error("Usage not found for subscription: {0}")]
+    UsageNotFound(uuid::Uuid),
+    
+    /// Metering not running
+    #[error("Metering not running")]
+    MeteringNotRunning,
+    
+    /// Metering already started
+    #[error("Metering already started")]
+    MeteringAlreadyStarted,
+    
+    /// Metering channel closed
+    #[error("Metering channel closed")]
+    MeteringChannelClosed,
+    
     /// Generic errors
     #[error("Internal error: {0}")]
     Internal(#[from] anyhow::Error),
@@ -72,6 +104,14 @@ pub enum TenantError {
     /// Resource allocation failed
     #[error("Resource allocation failed: {resource}")]
     ResourceAllocationFailed { resource: String },
+    
+    /// Tenant inactive
+    #[error("Tenant inactive: {tenant_id}")]
+    Inactive { tenant_id: String },
+    
+    /// Resource limit exceeded
+    #[error("Resource limit exceeded: {resource}")]
+    ResourceLimitExceeded { resource: String },
 }
 
 /// Usage tracking errors
@@ -96,6 +136,14 @@ pub enum UsageError {
     /// Query failed
     #[error("Metrics query failed: {message}")]
     QueryFailed { message: String },
+    
+    /// Tracking failed
+    #[error("Tracking failed: {0}")]
+    TrackingFailed(String),
+    
+    /// Internal error
+    #[error("Internal error: {0}")]
+    InternalError(String),
 }
 
 /// Billing system errors
@@ -153,6 +201,15 @@ pub enum QuotaError {
     /// Quota check failed
     #[error("Quota check failed: {message}")]
     CheckFailed { message: String },
+    
+    /// Limit exceeded
+    #[error("Limit exceeded for tenant {tenant_id}: {resource} = {current}/{limit}")]
+    LimitExceeded {
+        tenant_id: String,
+        resource: String,
+        limit: u64,
+        current: u64,
+    },
 }
 
 /// Provisioning errors
@@ -181,6 +238,10 @@ pub enum ProvisioningError {
     /// Invalid cluster configuration
     #[error("Invalid cluster configuration: {message}")]
     InvalidConfig { message: String },
+    
+    /// Cluster not found
+    #[error("Cluster not found: {cluster_id}")]
+    ClusterNotFound { cluster_id: String },
 }
 
 /// SSO integration errors
@@ -254,3 +315,60 @@ pub type SSOResult<T> = Result<T, SSOError>;
 
 /// Result type alias for analytics operations
 pub type AnalyticsResult<T> = Result<T, AnalyticsError>;
+
+// Additional From implementations for error conversions
+impl From<serde_json::Error> for TenantError {
+    fn from(err: serde_json::Error) -> Self {
+        TenantError::InvalidConfig {
+            message: format!("JSON serialization error: {}", err),
+        }
+    }
+}
+
+impl From<serde_json::Error> for UsageError {
+    fn from(err: serde_json::Error) -> Self {
+        UsageError::InvalidData {
+            message: format!("JSON error: {}", err),
+        }
+    }
+}
+
+impl From<serde_json::Error> for BillingError {
+    fn from(err: serde_json::Error) -> Self {
+        BillingError::CalculationFailed {
+            message: format!("JSON error: {}", err),
+        }
+    }
+}
+
+impl From<sqlx::Error> for TenantError {
+    fn from(err: sqlx::Error) -> Self {
+        TenantError::InvalidConfig {
+            message: format!("Database error: {}", err),
+        }
+    }
+}
+
+impl From<sqlx::Error> for UsageError {
+    fn from(err: sqlx::Error) -> Self {
+        UsageError::StorageFailed {
+            message: format!("Database error: {}", err),
+        }
+    }
+}
+
+impl From<sqlx::Error> for BillingError {
+    fn from(err: sqlx::Error) -> Self {
+        BillingError::CalculationFailed {
+            message: format!("Database error: {}", err),
+        }
+    }
+}
+
+impl From<anyhow::Error> for ProvisioningError {
+    fn from(err: anyhow::Error) -> Self {
+        ProvisioningError::InvalidConfig {
+            message: format!("Configuration error: {}", err),
+        }
+    }
+}

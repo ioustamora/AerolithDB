@@ -9,3 +9,8 @@ anyhow = { workspace = true }
 serde = { workspace = true }
 tracing = { workspace = true }
 serde_json = "1.0"
+async-trait = "0.1"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+reqwest = { version = "0.11", features = ["json"] }
+dashmap = "5.4"

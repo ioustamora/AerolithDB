@@ -238,9 +238,133 @@ pub struct FeeEstimate {
     pub fee_currency: String,
 }
 
+/// Payment provider enum for concrete implementations
+#[derive(Debug)]
+pub enum PaymentProvider {
+    Tron(crate::blockchain::tron::TronProvider),
+    Solana(crate::blockchain::solana::SolanaProvider),
+}
+
+impl PaymentProvider {
+    /// Get plugin metadata
+    pub fn metadata(&self) -> PaymentPluginMetadata {
+        match self {            PaymentProvider::Tron(_) => PaymentPluginMetadata {
+                name: "Tron Payment Provider".to_string(),
+                version: "1.0.0".to_string(),
+                description: "USDT/USDC payments on Tron network".to_string(),
+                supported_networks: vec!["tron".to_string()],
+                supported_tokens: vec!["USDT".to_string(), "USDC".to_string()],
+                capabilities: vec![
+                    PaymentCapability::WalletConnection,
+                    PaymentCapability::BalanceInquiry,
+                    PaymentCapability::PaymentProcessing,
+                    PaymentCapability::TransactionConfirmation,
+                ],
+            },            PaymentProvider::Solana(_) => PaymentPluginMetadata {
+                name: "Solana Payment Provider".to_string(),
+                version: "1.0.0".to_string(),
+                description: "USDT/USDC payments on Solana network".to_string(),
+                supported_networks: vec!["solana".to_string()],
+                supported_tokens: vec!["USDT".to_string(), "USDC".to_string()],
+                capabilities: vec![
+                    PaymentCapability::WalletConnection,
+                    PaymentCapability::BalanceInquiry,
+                    PaymentCapability::PaymentProcessing,
+                    PaymentCapability::TransactionConfirmation,
+                ],            },
+        }
+    }
+    
+    /// Connect to wallet (placeholder implementation)
+    pub async fn connect_wallet(&self, _request: ConnectWalletRequest) -> Result<WalletConnection> {
+        // TODO: Implement actual wallet connection logic
+        Ok(WalletConnection {
+            wallet_address: "placeholder".to_string(),
+            network: "placeholder".to_string(),
+            connected_at: chrono::Utc::now(),
+            supported_tokens: vec!["USDT".to_string(), "USDC".to_string()],
+            connection_id: Uuid::new_v4().to_string(),
+        })
+    }
+    
+    /// Check balance (placeholder implementation)
+    pub async fn check_balance(&self, _wallet_address: &str, _token: &str) -> Result<Balance> {
+        // TODO: Implement actual balance checking
+        Ok(Balance {
+            wallet_address: "placeholder".to_string(),
+            token: "USDT".to_string(),
+            amount: 1000000, // 1 USDT in micro-units
+            decimals: 6,
+            formatted_amount: "1.000000".to_string(),
+            last_updated: chrono::Utc::now(),
+        })
+    }
+    
+    /// Create payment (placeholder implementation)
+    pub async fn create_payment(&self, _request: CreatePaymentRequest) -> Result<PaymentTransaction> {
+        // TODO: Implement actual payment creation
+        Ok(PaymentTransaction {
+            transaction_id: Uuid::new_v4().to_string(),
+            network_tx_hash: Some("placeholder".to_string()),
+            from_wallet: "placeholder".to_string(),
+            to_wallet: "placeholder".to_string(),
+            amount: 1000000,
+            token: "USDT".to_string(),
+            fee: 1000,
+            status: TransactionStatus::Pending,
+            created_at: chrono::Utc::now(),
+            expires_at: chrono::Utc::now() + chrono::Duration::hours(1),
+        })
+    }
+    
+    /// Confirm payment (placeholder implementation)
+    pub async fn confirm_payment(&self, _transaction_id: &str) -> Result<PaymentConfirmation> {
+        // TODO: Implement actual payment confirmation
+        Ok(PaymentConfirmation {
+            transaction_id: "placeholder".to_string(),
+            network_tx_hash: "placeholder".to_string(),
+            confirmations: 1,
+            confirmed_at: chrono::Utc::now(),
+            block_number: Some(12345),
+            gas_used: Some(25000),
+        })
+    }
+    
+    /// Get payment status (placeholder implementation)
+    pub async fn get_payment_status(&self, _transaction_id: &str) -> Result<PaymentStatus> {
+        // TODO: Implement actual status checking
+        Ok(PaymentStatus {
+            transaction_id: "placeholder".to_string(),
+            status: TransactionStatus::Confirmed,
+            confirmations: 1,
+            required_confirmations: 1,
+            estimated_completion: Some(chrono::Utc::now()),
+            error_message: None,
+        })
+    }
+    
+    /// Get payment history (placeholder implementation)
+    pub async fn get_payment_history(&self, _wallet_address: &str, _limit: Option<u32>) -> Result<Vec<PaymentRecord>> {
+        // TODO: Implement actual payment history
+        Ok(vec![])
+    }
+    
+    /// Estimate fees (placeholder implementation)
+    pub async fn estimate_fees(&self, _amount: u64, _token: &str) -> Result<FeeEstimate> {
+        // TODO: Implement actual fee estimation
+        Ok(FeeEstimate {
+            network_fee: 1000,
+            service_fee: 100,
+            total_fee: 1100,
+            estimated_confirmation_time: 30, // 30 seconds
+            fee_currency: "TRX".to_string(),
+        })
+    }
+}
+
 /// Payment plugin manager for coordinating multiple payment providers
 pub struct PaymentManager {
-    plugins: HashMap<String, Box<dyn PaymentPlugin>>,
+    providers: HashMap<String, PaymentProvider>,
     config: PaymentConfig,
 }
 
@@ -248,42 +372,42 @@ impl PaymentManager {
     /// Create a new payment manager
     pub fn new(config: PaymentConfig) -> Self {
         Self {
-            plugins: HashMap::new(),
+            providers: HashMap::new(),
             config,
         }
     }
-      /// Register a payment plugin (plugin should be pre-initialized)
-    pub fn register_plugin(&mut self, name: String, plugin: Box<dyn PaymentPlugin>) -> Result<()> {
-        self.plugins.insert(name, plugin);
+      /// Register a payment provider
+    pub fn register_provider(&mut self, name: String, provider: PaymentProvider) -> Result<()> {
+        self.providers.insert(name, provider);
         Ok(())
     }
     
-    /// Get a payment plugin by name
-    pub fn get_plugin(&self, name: &str) -> Option<&dyn PaymentPlugin> {
-        self.plugins.get(name).map(|p| p.as_ref())
+    /// Get a payment provider by name
+    pub fn get_provider(&self, name: &str) -> Option<&PaymentProvider> {
+        self.providers.get(name)
     }
     
-    /// List all available payment plugins
-    pub fn list_plugins(&self) -> Vec<PaymentPluginMetadata> {
-        self.plugins.values()
-            .map(|plugin| plugin.metadata())
+    /// List all available payment providers
+    pub fn list_providers(&self) -> Vec<PaymentPluginMetadata> {
+        self.providers.values()
+            .map(|provider| provider.metadata())
             .collect()
     }
     
-    /// Create payment using appropriate plugin
+    /// Create payment using appropriate provider
     pub async fn create_payment(&self, network: &str, request: CreatePaymentRequest) -> Result<PaymentTransaction> {
-        let plugin = self.get_plugin(network)
-            .ok_or_else(|| anyhow::anyhow!("Payment plugin not found for network: {}", network))?;
+        let provider = self.get_provider(network)
+            .ok_or_else(|| anyhow::anyhow!("Payment provider not found for network: {}", network))?;
         
-        plugin.create_payment(request).await
+        provider.create_payment(request).await
     }
     
-    /// Confirm payment using appropriate plugin
+    /// Confirm payment using appropriate provider
     pub async fn confirm_payment(&self, network: &str, transaction_id: &str) -> Result<PaymentConfirmation> {
-        let plugin = self.get_plugin(network)
-            .ok_or_else(|| anyhow::anyhow!("Payment plugin not found for network: {}", network))?;
+        let provider = self.get_provider(network)
+            .ok_or_else(|| anyhow::anyhow!("Payment provider not found for network: {}", network))?;
         
-        plugin.confirm_payment(transaction_id).await
+        provider.confirm_payment(transaction_id).await
     }
 }
 

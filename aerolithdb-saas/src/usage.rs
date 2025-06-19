@@ -132,6 +132,12 @@ pub struct ComputeMetrics {
     
     /// Number of background tasks executed
     pub background_tasks: u64,
+    
+    /// Total compute time in milliseconds (used by usage_tracker)
+    pub total_compute_ms: u64,
+    
+    /// Query operations count (used by usage_tracker)
+    pub query_operations: u64,
 }
 
 /// Network usage metrics
@@ -157,6 +163,9 @@ pub struct NetworkMetrics {
     
     /// Average response size in bytes
     pub avg_response_size: f64,
+    
+    /// Total bytes transferred (used by usage_tracker)
+    pub total_bytes: u64,
 }
 
 /// Aggregated usage statistics over a time period

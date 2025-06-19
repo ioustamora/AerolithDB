@@ -303,7 +303,7 @@ impl UsageTracker {
         let task = tokio::spawn(async move {
             info!("🔄 Starting metrics aggregator");
             
-            let mut interval = interval(Duration::from_secs(config.aggregation_interval_seconds));
+            let mut interval = interval(Duration::from_std(config.aggregation_interval).unwrap());
             
             loop {
                 interval.tick().await;
@@ -326,7 +326,7 @@ impl UsageTracker {
         let task = tokio::spawn(async move {
             info!("🔄 Starting usage cleanup task");
             
-            let mut interval = interval(Duration::from_secs(config.cleanup_interval_seconds));
+            let mut interval = interval(Duration::from_std(config.collection_interval).unwrap());
             
             loop {
                 interval.tick().await;
@@ -418,7 +418,7 @@ impl UsageTracker {
         metrics_cache: &Arc<RwLock<HashMap<Uuid, UsageMetrics>>>,
         config: &UsageConfig,
     ) -> Result<()> {
-        let cutoff_time = Utc::now() - chrono::Duration::seconds(config.retention_seconds as i64);
+        let cutoff_time = Utc::now() - config.retention_period;
         let mut cache = metrics_cache.write().await;
         
         let initial_count = cache.len();
@@ -438,17 +438,18 @@ pub struct UsageTrackerFactory;
 
 impl UsageTrackerFactory {
     /// Create a new usage tracker with default configuration
-    pub fn create_default() -> Result<UsageTracker> {
-        let config = UsageConfig {
+    pub fn create_default() -> Result<UsageTracker> {        let config = UsageConfig {
             enabled: true,
-            aggregation_interval_seconds: 60,
-            cleanup_interval_seconds: 3600,
-            retention_seconds: 86400 * 7, // 7 days
-            batch_size: 1000,
-            max_events_per_second: 10000,
-        };
+            collection_interval: std::time::Duration::from_secs(30),
+            aggregation_interval: std::time::Duration::from_secs(60),
+            retention_period: chrono::Duration::days(7),
+            database_url: "memory://test".to_string(),
+            track_api_calls: true,
+            track_storage: true,
+            track_compute: true,
+            track_network: true,        };
         
-        UsageTracker::new(config)
+        UsageTracker::new(&config)
     }
     
     /// Create a new usage tracker with custom configuration
