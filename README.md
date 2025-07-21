@@ -1,4 +1,4 @@
-# AerolithDB - Enterprise-Ready Distributed Database Platform
+# AerolithDB - Education project Enterprise-Ready Distributed Database Platform !!! DONT USE IN PRODUCTION !!!
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Production Ready](https://img.shields.io/badge/status-production_ready-green.svg)](https://github.com/aerolithsdb/aerolithsdb)
